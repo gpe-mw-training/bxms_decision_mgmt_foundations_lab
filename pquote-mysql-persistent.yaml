@@ -1,293 +1,413 @@
-{
-  "kind": "Template",
-  "apiVersion": "v1",
-  "metadata": {
-    "name": "mysql-persistent",
-    "annotations": {
-      "openshift.io/display-name": "MySQL (Persistent)",
-      "description": "MySQL database service, with persistent storage. For more information about using this template, including OpenShift considerations, see https://github.com/sclorg/mysql-container/blob/master/5.7/README.md.\n\nNOTE: Scaling to more than one replica is not supported. You must have persistent volumes available in your cluster to use this template.",
-      "iconClass": "icon-mysql-database",
-      "tags": "database,mysql",
-      "openshift.io/long-description": "This template provides a standalone MySQL server with a database created.  The database is stored on persistent storage.  The database name, username, and password are chosen via parameters when provisioning this service.",
-      "openshift.io/provider-display-name": "Red Hat, Inc.",
-      "openshift.io/documentation-url": "https://docs.openshift.org/latest/using_images/db_images/mysql.html",
-      "openshift.io/support-url": "https://access.redhat.com"
-    }
-  },
-  "message": "The following service(s) have been created in your project: ${DATABASE_SERVICE_NAME}.\n\n       Username: ${MYSQL_USER}\n       Password: ${MYSQL_PASSWORD}\n  Database Name: ${MYSQL_DATABASE}\n Connection URL: mysql://${DATABASE_SERVICE_NAME}:3306/\n\nFor more information about using this template, including OpenShift considerations, see https://github.com/sclorg/mysql-container/blob/master/5.7/README.md.",
-  "labels": {
-    "template": "mysql-persistent-template"
-  },
-  "objects": [
-    {
-      "kind": "Secret",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "${DATABASE_SERVICE_NAME}",
-        "annotations": {
-          "template.openshift.io/expose-username": "{.data['database-user']}",
-          "template.openshift.io/expose-password": "{.data['database-password']}",
-          "template.openshift.io/expose-root_password": "{.data['database-root-password']}",
-          "template.openshift.io/expose-database_name": "{.data['database-name']}"
-        }
-      },
-      "stringData" : {
-        "database-user" : "${MYSQL_USER}",
-        "database-password" : "${MYSQL_PASSWORD}",
-        "database-root-password" : "${MYSQL_ROOT_PASSWORD}",
-        "database-name" : "${MYSQL_DATABASE}"
-      }
-    },
-    {
-      "kind": "Service",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "${DATABASE_SERVICE_NAME}",
-        "annotations": {
-          "template.openshift.io/expose-uri": "mysql://{.spec.clusterIP}:{.spec.ports[?(.name==\"mysql\")].port}"
-        }
-      },
-      "spec": {
-        "ports": [
-          {
-            "name": "mysql",
-            "port": 3306
-          }
-        ],
-        "selector": {
-          "name": "${DATABASE_SERVICE_NAME}"
-        }
-      }
-    },
-    {
-      "kind": "PersistentVolumeClaim",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "${DATABASE_SERVICE_NAME}"
-      },
-      "spec": {
-        "accessModes": [
-          "ReadWriteOnce"
-        ],
-        "resources": {
-          "requests": {
-            "storage": "${VOLUME_CAPACITY}"
-          }
-        }
-      }
-    },
-    {
-      "kind": "DeploymentConfig",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "${DATABASE_SERVICE_NAME}",
-        "annotations": {
-          "template.alpha.openshift.io/wait-for-ready": "true"
-        }
-      },
-      "spec": {
-        "strategy": {
-          "type": "Rolling"
-          "resources": {}
-          "rollingParams":
-            "intervalSeconds": 1
-            "maxSurge": "25%"
-            "maxUnavailable": "25%"
-            "post":
-              "execNewPod":
-                "command":
-                 - /bin/sh
-                 - -c
-                 - "hostname && sleep 10 && wget https://raw.githubusercontent.com/gpe-mw-training/bxms_decision_mgmt_foundations_lab/master/pquote-reporting.sql-O approot/data/pquote-reporting.sql && /opt/rh/rh-mysql56/root/usr/bin/mysql -h $MYSQL_SERVICE_HOST -u $MYSQL_USER -D $MYSQL_DATABASE -p$MYSQL_PASSWORD -P 3306 < app-root/data/pquote-reporting.sql && sleep 60"
-                "containerName": "mysql"
-              "failurePolicy": "ignore"
-            "timeoutSeconds": 600
-            "updatePeriodSeconds": 1
-        },
-        "triggers": [
-          {
-            "type": "ImageChange",
-            "imageChangeParams": {
-              "automatic": true,
-              "containerNames": [
-                "mysql"
-              ],
-              "from": {
-                "kind": "ImageStreamTag",
-                "name": "mysql:${MYSQL_VERSION}",
-                "namespace": "${NAMESPACE}"
-              }
-            }
-          },
-          {
-            "type": "ConfigChange"
-          }
-        ],
-        "replicas": 1,
-        "selector": {
-          "name": "${DATABASE_SERVICE_NAME}"
-        },
-        "template": {
-          "metadata": {
-            "labels": {
-              "name": "${DATABASE_SERVICE_NAME}"
-            }
-          },
-          "spec": {
-            "containers": [
-              {
-                "name": "mysql",
-                "image": " ",
-                "ports": [
-                  {
-                    "containerPort": 3306
-                  }
-                ],
-                "readinessProbe": {
-                  "timeoutSeconds": 1,
-                  "initialDelaySeconds": 5,
-                  "exec": {
-                    "command": [ "/bin/sh", "-i", "-c",
-                      "MYSQL_PWD=\"$MYSQL_PASSWORD\" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE -e 'SELECT 1'"]
-                  }
-                },
-                "livenessProbe": {
-                  "timeoutSeconds": 1,
-                  "initialDelaySeconds": 30,
-                  "tcpSocket": {
-                    "port": 3306
-                  }
-                },
-                "env": [
-                  {
-                    "name": "MYSQL_USER",
-                    "valueFrom": {
-                      "secretKeyRef" : {
-                        "name" : "${DATABASE_SERVICE_NAME}",
-                        "key" : "database-user"
-                      }
-                    }
-                  },
-                  {
-                    "name": "MYSQL_PASSWORD",
-                    "valueFrom": {
-                      "secretKeyRef" : {
-                        "name" : "${DATABASE_SERVICE_NAME}",
-                        "key" : "database-password"
-                      }
-                    }
-                  },
-                  {
-                    "name": "MYSQL_ROOT_PASSWORD",
-                    "valueFrom": {
-                      "secretKeyRef" : {
-                        "name" : "${DATABASE_SERVICE_NAME}",
-                        "key" : "database-root-password"
-                      }
-                    }
-                  },
-                  {
-                    "name": "MYSQL_DATABASE",
-                    "valueFrom": {
-                      "secretKeyRef" : {
-                        "name" : "${DATABASE_SERVICE_NAME}",
-                        "key" : "database-name"
-                      }
-                    }
-                  }
-                ],
-                "resources": {
-                  "limits": {
-                    "memory": "${MEMORY_LIMIT}"
-                  }
-                },
-                "volumeMounts": [
-                  {
-                    "name": "${DATABASE_SERVICE_NAME}-data",
-                    "mountPath": "/var/lib/mysql/data"
-                  }
-                ],
-                "imagePullPolicy": "IfNotPresent"
-              }
-            ],
-            "volumes": [
-              {
-                "name": "${DATABASE_SERVICE_NAME}-data",
-                "persistentVolumeClaim": {
-                  "claimName": "${DATABASE_SERVICE_NAME}"
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
-  ],
-  "parameters": [
-    {
-      "name": "MEMORY_LIMIT",
-      "displayName": "Memory Limit",
-      "description": "Maximum amount of memory the container can use.",
-      "value": "512Mi",
-      "required": true
-    },
-    {
-      "name": "NAMESPACE",
-      "displayName": "Namespace",
-      "description": "The OpenShift Namespace where the ImageStream resides.",
-      "value": "openshift"
-    },
-    {
-      "name": "DATABASE_SERVICE_NAME",
-      "displayName": "Database Service Name",
-      "description": "The name of the OpenShift Service exposed for the database.",
-      "value": "mysql",
-      "required": true
-    },
-    {
-      "name": "MYSQL_USER",
-      "displayName": "MySQL Connection Username",
-      "description": "Username for MySQL user that will be used for accessing the database.",
-      "generate": "expression",
-      "from": "user[A-Z0-9]{3}",
-      "required": true
-    },
-    {
-      "name": "MYSQL_PASSWORD",
-      "displayName": "MySQL Connection Password",
-      "description": "Password for the MySQL connection user.",
-      "generate": "expression",
-      "from": "[a-zA-Z0-9]{16}",
-      "required": true
-    },
-    {
-      "name": "MYSQL_ROOT_PASSWORD",
-      "displayName": "MySQL root user Password",
-      "description": "Password for the MySQL root user.",
-      "generate": "expression",
-      "from": "[a-zA-Z0-9]{16}",
-      "required": true
-    },
-    {
-      "name": "MYSQL_DATABASE",
-      "displayName": "MySQL Database Name",
-      "description": "Name of the MySQL database accessed.",
-      "value": "sampledb",
-      "required": true
-    },
-    {
-      "name": "VOLUME_CAPACITY",
-      "displayName": "Volume Capacity",
-      "description": "Volume space available for data, e.g. 512Mi, 2Gi.",
-      "value": "1Gi",
-      "required": true
-    },
-    {
-      "name": "MYSQL_VERSION",
-      "displayName": "Version of MySQL Image",
-      "description": "Version of MySQL image to be used (5.5, 5.6, 5.7, or latest).",
-      "value": "5.7",
-      "required": true
-    }
-  ]
-}
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: pquote-mysql-persistent
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      template.alpha.openshift.io/wait-for-ready: "true"
+    creationTimestamp: null
+    generation: 1
+    labels:
+      template: mysql-persistent-template
+    name: mysql
+  spec:
+    replicas: 1
+    selector:
+      name: mysql
+    strategy:
+      activeDeadlineSeconds: 21600
+      recreateParams:
+        post:
+          execNewPod:
+            command:
+            - /bin/sh
+            - -i
+            - -c
+            - hostname && sleep 10 && curl https://raw.githubusercontent.com/gpe-mw-training/bxms_decision_mgmt_foundations_lab/master/pquote-reporting.sql
+              > /tmp/pquote-reporting.sql && mysql -h $MYSQL_SERVICE_HOST -u $MYSQL_USER
+              -p$MYSQL_PASSWORD -D $MYSQL_DATABASE < /tmp/pquote-reporting.sql
+            containerName: mysql
+          failurePolicy: Abort
+        timeoutSeconds: 600
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          name: mysql
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                key: database-user
+                name: mysql
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: mysql
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-root-password
+                name: mysql
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                key: database-name
+                name: mysql
+          image: registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:b8b26b5201adafb028757d7e574d377fe3e5ce5de019d783261352de2c58fcb1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3306
+            timeoutSeconds: 1
+          name: mysql
+          ports:
+          - containerPort: 3306
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE
+                -e 'SELECT 1'
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/lib/mysql/data
+            name: mysql-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - mysql
+        from:
+          kind: ImageStreamTag
+          name: mysql:5.7
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange
+  status:
+    availableReplicas: 0
+    latestVersion: 0
+    observedGeneration: 0
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      openshift.io/deployer-pod.name: mysql-1-deploy
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: mysql
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: "1"
+      openshift.io/deployment.status-reason: image change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"v1","metadata":{"name":"mysql","namespace":"dtorresf-examples","selfLink":"/oapi/v1/namespaces/dtorresf-examples/deploymentconfigs/mysql","uid":"4798200f-bffb-11e7-8419-0682973451aa","resourceVersion":"31275037","generation":2,"creationTimestamp":"2017-11-02T18:26:01Z","labels":{"template":"mysql-persistent-template"},"annotations":{"template.alpha.openshift.io/wait-for-ready":"true"}},"spec":{"strategy":{"type":"Recreate","recreateParams":{"timeoutSeconds":600,"post":{"failurePolicy":"Abort","execNewPod":{"command":["/bin/sh","-i","-c","hostname \u0026\u0026 sleep 10 \u0026\u0026 curl https://raw.githubusercontent.com/gpe-mw-training/bxms_decision_mgmt_foundations_lab/master/pquote-reporting.sql \u003e /tmp/pquote-reporting.sql \u0026\u0026 mysql -h $MYSQL_SERVICE_HOST -u $MYSQL_USER -p$MYSQL_PASSWORD -D $MYSQL_DATABASE \u003c /tmp/pquote-reporting.sql"],"containerName":"mysql"}}},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["mysql"],"from":{"kind":"ImageStreamTag","namespace":"openshift","name":"mysql:5.7"},"lastTriggeredImage":"registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:b8b26b5201adafb028757d7e574d377fe3e5ce5de019d783261352de2c58fcb1"}},{"type":"ConfigChange"}],"replicas":1,"test":false,"selector":{"name":"mysql"},"template":{"metadata":{"creationTimestamp":null,"labels":{"name":"mysql"}},"spec":{"volumes":[{"name":"mysql-data","persistentVolumeClaim":{"claimName":"mysql"}}],"containers":[{"name":"mysql","image":"registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:b8b26b5201adafb028757d7e574d377fe3e5ce5de019d783261352de2c58fcb1","ports":[{"containerPort":3306,"protocol":"TCP"}],"env":[{"name":"MYSQL_USER","valueFrom":{"secretKeyRef":{"name":"mysql","key":"database-user"}}},{"name":"MYSQL_PASSWORD","valueFrom":{"secretKeyRef":{"name":"mysql","key":"database-password"}}},{"name":"MYSQL_ROOT_PASSWORD","valueFrom":{"secretKeyRef":{"name":"mysql","key":"database-root-password"}}},{"name":"MYSQL_DATABASE","valueFrom":{"secretKeyRef":{"name":"mysql","key":"database-name"}}}],"resources":{"limits":{"memory":"512Mi"}},"volumeMounts":[{"name":"mysql-data","mountPath":"/var/lib/mysql/data"}],"livenessProbe":{"tcpSocket":{"port":3306},"initialDelaySeconds":30,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"readinessProbe":{"exec":{"command":["/bin/sh","-i","-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE -e 'SELECT 1'"]},"initialDelaySeconds":5,"timeoutSeconds":1,"periodSeconds":10,"successThreshold":1,"failureThreshold":3},"terminationMessagePath":"/dev/termination-log","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{}}}},"status":{"latestVersion":1,"observedGeneration":1,"replicas":0,"updatedReplicas":0,"availableReplicas":0,"unavailableReplicas":0,"details":{"message":"image change","causes":[{"type":"ImageChange","imageTrigger":{"from":{"kind":"ImageStreamTag","namespace":"openshift","name":"mysql:5.7"}}}]},"conditions":[{"type":"Available","status":"False","lastUpdateTime":"2017-11-02T18:26:01Z","lastTransitionTime":"2017-11-02T18:26:01Z","message":"Deployment config does not have minimum availability."}]}}
+    creationTimestamp: null
+    generation: 1
+    labels:
+      openshift.io/deployment-config.name: mysql
+      template: mysql-persistent-template
+    name: mysql-1
+  spec:
+    replicas: 1
+    selector:
+      deployment: mysql-1
+      deploymentconfig: mysql
+      name: mysql
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "1"
+          openshift.io/deployment-config.name: mysql
+          openshift.io/deployment.name: mysql-1
+        creationTimestamp: null
+        labels:
+          deployment: mysql-1
+          deploymentconfig: mysql
+          name: mysql
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                key: database-user
+                name: mysql
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: mysql
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-root-password
+                name: mysql
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                key: database-name
+                name: mysql
+          image: registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:b8b26b5201adafb028757d7e574d377fe3e5ce5de019d783261352de2c58fcb1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3306
+            timeoutSeconds: 1
+          name: mysql
+          ports:
+          - containerPort: 3306
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE
+                -e 'SELECT 1'
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/lib/mysql/data
+            name: mysql-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql
+  status:
+    replicas: 0
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      template.openshift.io/expose-uri: mysql://{.spec.clusterIP}:{.spec.ports[?(.name=="mysql")].port}
+    creationTimestamp: null
+    labels:
+      template: mysql-persistent-template
+    name: mysql
+  spec:
+    ports:
+    - name: mysql
+      port: 3306
+      protocol: TCP
+      targetPort: 3306
+    selector:
+      name: mysql
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubernetes.io/created-by: |
+        {"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"ReplicationController","namespace":"dtorresf-examples","name":"mysql-1","uid":"479aa6e8-bffb-11e7-8419-0682973451aa","apiVersion":"v1","resourceVersion":"31275062"}}
+      kubernetes.io/limit-ranger: 'LimitRanger plugin set: cpu request for container
+        mysql; cpu limit for container mysql'
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: mysql
+      openshift.io/deployment.name: mysql-1
+      openshift.io/scc: restricted
+    creationTimestamp: null
+    generateName: mysql-1-
+    labels:
+      deployment: mysql-1
+      deploymentconfig: mysql
+      name: mysql
+  spec:
+    containers:
+    - env:
+      - name: MYSQL_USER
+        valueFrom:
+          secretKeyRef:
+            key: database-user
+            name: mysql
+      - name: MYSQL_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: database-password
+            name: mysql
+      - name: MYSQL_ROOT_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: database-root-password
+            name: mysql
+      - name: MYSQL_DATABASE
+        valueFrom:
+          secretKeyRef:
+            key: database-name
+            name: mysql
+      image: registry.access.redhat.com/rhscl/mysql-57-rhel7@sha256:b8b26b5201adafb028757d7e574d377fe3e5ce5de019d783261352de2c58fcb1
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        successThreshold: 1
+        tcpSocket:
+          port: 3306
+        timeoutSeconds: 1
+      name: mysql
+      ports:
+      - containerPort: 3306
+        protocol: TCP
+      readinessProbe:
+        exec:
+          command:
+          - /bin/sh
+          - -i
+          - -c
+          - MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE
+            -e 'SELECT 1'
+        failureThreshold: 3
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 512Mi
+      securityContext:
+        capabilities:
+          drop:
+          - KILL
+          - MKNOD
+          - SETGID
+          - SETUID
+          - SYS_CHROOT
+        privileged: false
+        runAsUser: 1002540000
+        seLinuxOptions:
+          level: s0:c50,c45
+      terminationMessagePath: /dev/termination-log
+      volumeMounts:
+      - mountPath: /var/lib/mysql/data
+        name: mysql-data
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-bpj2t
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: default-dockercfg-bfmrg
+    nodeName: node8.na1.internal
+    nodeSelector:
+      env: users
+    restartPolicy: Always
+    securityContext:
+      fsGroup: 1002540000
+      seLinuxOptions:
+        level: s0:c50,c45
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - name: mysql-data
+      persistentVolumeClaim:
+        claimName: mysql
+    - name: default-token-bpj2t
+      secret:
+        defaultMode: 420
+        secretName: default-token-bpj2t
+parameters:
+  - name: MEMORY_LIMIT
+    displayName: "Memory Limit"
+    description: "Maximum amount of memory the container can use."
+    value: "512Mi"
+    requited: true
+  - name: NAMESPACE
+    displayName: "Namespace"
+    description: "The OpenShift Namespace where the ImageStream resides."
+    value: "openshift"
+  - name: "DATABASE_SERVICE_NAME"
+    displayName: "Database Service Name"
+    description: "The name of the OpenShift Service exposed for the database."
+    value: "mysql"
+    required: true
+  - name: "MYSQL_USER"
+    displayName: "MySQL Connection Username"
+    description: "Username for MySQL user that will be used for accessing the database."
+    generate: "expression"
+    from: "user[A-Z0-9]{3}"
+    required: true
+  - name: "MYSQL_PASSWORD"
+    displayName: "MySQL Connection Password"
+    description: "Password for the MySQL connection user."
+    generate: "expression"
+    from: "[a-zA-Z0-9]{16}"
+    required: true
+  - name: "MYSQL_ROOT_PASSWORD"
+    displayName: "MySQL root user Password"
+    description: "Password for the MySQL root user."
+    generate: "expression"
+    from: "[a-zA-Z0-9]{16}"
+    required: true
+  - name: "MYSQL_DATABASE"
+    displayName: "MySQL Database Name"
+    description: "Name of the MySQL database accessed."
+    value: "pquote"
+    required": true
+  - name: "VOLUME_CAPACITY"
+    displayName: "Volume Capacity"
+    description: "Volume space available for data, e.g. 512Mi, 2Gi."
+    value: "1Gi"
+    required: true
+  - name: "MYSQL_VERSION"
+    displayName: "Version of MySQL Image"
+    description: "Version of MySQL image to be used (5.5, 5.6, 5.7, or latest)."
+    value: "5.7"
+    required: true

@@ -449,6 +449,30 @@
             }
         },
         {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "spec": {
+                "ports": [
+                    {
+                        "port": 8080,
+                        "targetPort": 8080
+                    }
+                ],
+                "selector": {
+                    "deploymentConfig": "${APPLICATION_NAME}-ng-mortgages"
+                }
+            },
+            "metadata": {
+                "name": "${APPLICATION_NAME}-ng-mortgages",
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                },
+                "annotations": {
+                    "description": "The nodejs web server's http port for the mortgages demo."
+                }
+            }
+        },
+        {
             "kind": "Route",
             "apiVersion": "v1",
             "id": "${APPLICATION_NAME}-buscentr-http",
@@ -533,6 +557,86 @@
                     "termination": "passthrough"
                 }
             }
+        },
+        {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "id": "${APPLICATION_NAME}-ng-mortgages-http",
+            "metadata": {
+                "name": "${APPLICATION_NAME}-ng-mortgages",
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                },
+                "annotations": {
+                    "description": "Route for nodejs mortgages http service."
+                }
+            },
+            "spec": {
+                "host": "${BUSINESS_CENTRAL_HOSTNAME_HTTP}",
+                "to": {
+                    "name": "${APPLICATION_NAME}-ng-mortgages"
+                }
+            }
+        },
+        {
+          "kind": "BuildConfig",
+          "apiVersion": "v1",
+          "metadata": {
+              "name": "${APPLICATION_NAME}-ng-mortgages",
+              "labels": {
+                  "application": "${APPLICATION_NAME}"
+              }
+          },
+          "spec": {
+            "output": {
+              "to": {
+                "kind": "ImageStreamTag",
+                "name": "ng-mortgages:latest"
+              }
+            },
+            "postCommit": {},
+            "resources": {},
+            "runPolicy": "Serial",
+            "source": {
+              "git": {
+                "ref": "master",
+                "uri": "https://github.com/gpe-mw-training/bxms_decision_mgmt_ngmortgages.git",
+                "type": "Git"
+              }
+            },
+            "strategy": {
+              "sourceStrategy": {
+                "from": {
+                  "kind": "ImageStreamTag",
+                  "name": "nodejs:6",
+                  "namespace": "openshift"
+                },
+                "type": "Source"
+              }
+            },
+            "triggers": [
+              {
+                  "type": "ImageChange"
+              },
+              {
+                  "type": "ConfigChange"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "ImageStream",
+          "metadata": {
+            "name": "ng-mortgages",
+            "labels": {
+                "application": "${APPLICATION_NAME}"
+            }
+          },
+          "spec": {
+            "lookupPolicy": {
+              "local": false
+            }
+          }
         },
         {
             "kind": "DeploymentConfig",
@@ -1103,6 +1207,82 @@
                                     {
                                         "name": "MYSQL_AIO",
                                         "value": "${MYSQL_AIO}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}-ng-mortgages",
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "triggers": [
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "${APPLICATION_NAME}-ng-mortgages"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "ng-mortgages:latest"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "deploymentConfig": "${APPLICATION_NAME}-ng-mortgages"
+                },
+                "template": {
+                    "metadata": {
+                        "name": "${APPLICATION_NAME}-ng-mortgages",
+                        "labels": {
+                            "deploymentConfig": "${APPLICATION_NAME}-ng-mortgages",
+                            "application": "${APPLICATION_NAME}"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "${APPLICATION_NAME}-ng-mortgages",
+                                "image": "ng-mortgages:latest",
+                                "imagePullPolicy": "Always",
+                                "livenessProbe": {
+                                  "tcpSocket": {
+                                      "port": 8080
+                                  },
+                                  "initialDelaySeconds": 15,
+                                  "timeoutSeconds":1
+                                },
+                                "readinessProbe": {
+                                  "tcpSocket": {
+                                      "port": 8080
+                                  },
+                                  "initialDelaySeconds": 15,
+                                  "timeoutSeconds":1
+                                },
+                                "ports": [
+                                    {
+                                        "name": "http",
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
                                     }
                                 ]
                             }

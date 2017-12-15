@@ -607,9 +607,8 @@
             "strategy": {
               "sourceStrategy": {
                 "from": {
-                  "kind": "ImageStreamTag",
-                  "name": "nodejs:6",
-                  "namespace": "openshift"
+                  "kind": "DockerImage",
+                  "name": "registry.access.redhat.com/rhscl/nodejs-6-rhel7"
                 },
                 "type": "Source"
               }
@@ -733,6 +732,18 @@
                                     }
                                 ],
                                 "env": [
+                                    {
+                                      "name": "JAVA_MAX_MEM_RATIO",
+                                      "value": "80"
+                                    },
+                                    {
+                                      "name": "JAVA_INITIAL_MEM_RATIO",
+                                      "value": "0"
+                                    },
+                                    {
+                                      "name": "GC_MAX_METASPACE_SIZE",
+                                      "value": "500"
+                                    },
                                     {
                                         "name": "KIE_ADMIN_PWD",
                                         "value": "${KIE_ADMIN_PWD}"

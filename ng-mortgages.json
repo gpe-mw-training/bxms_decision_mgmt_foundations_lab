@@ -29,6 +29,13 @@
             "name": "APPLICATION_NAME",
             "value": "myapp",
             "required": true
+        },
+        {
+          "displayName": "Push Secret Name",
+          "description": "The name of a push secret for the project",
+          "name": "PUSH_SECRET_NAME",
+          "value": "builder-dockercfg-8vlbg",
+          "required": true
         }
     ],
     "objects": [
@@ -90,6 +97,9 @@
               "to": {
                 "kind": "ImageStreamTag",
                 "name": "ng-mortgages:latest"
+              },
+              "pushSecret": {
+                "name":"${PUSH_SECRET_NAME}"
               }
             },
             "postCommit": {},
@@ -105,9 +115,8 @@
             "strategy": {
               "sourceStrategy": {
                 "from": {
-                  "kind": "ImageStreamTag",
-                  "name": "nodejs:6",
-                  "namespace": "openshift"
+                  "kind": "DockerImage",
+                  "name": "registry.access.redhat.com/rhscl/nodejs-6-rhel7"
                 },
                 "type": "Source"
               }

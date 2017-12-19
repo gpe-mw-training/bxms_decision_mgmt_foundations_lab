@@ -136,6 +136,9 @@
         <subsystem xmlns="urn:jboss:domain:bean-validation:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:4.0">
             <datasources>
+                <xa-datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="myapp_mysql-DB" use-java-context="true" enabled="true"> <xa-datasource-property name="DatabaseName">root</xa-datasource-property> <xa-datasource-property name="Port">3306</xa-datasource-property> <xa-datasource-property name="ServerName">172.30.20.23</xa-datasource-property> <driver>mysql</driver> <security> <user-name>usermSj</user-name> <password>g6dBaqcN</password> </security> <validation> <validate-on-match>true</validate-on-match> <background-validation>false</background-validation> <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker"></valid-connection-checker> <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter"></exception-sorter> </validation> </xa-datasource>
+<datasource jta="false" jndi-name="java:jboss/datasources/ExampleDSObjectStore" pool-name="myapp_mysqlObjectStorePool" enabled="true"> <connection-url>jdbc:mysql://172.30.20.23:3306/root</connection-url> <driver>mysql</driver> <security> <user-name>usermSj</user-name> <password>g6dBaqcN</password> </security> </datasource>
+<!-- ##DATASOURCES## -->
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>

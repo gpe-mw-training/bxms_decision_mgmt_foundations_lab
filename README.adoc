@@ -34,8 +34,17 @@
 
 == JA Bride notes
 
-$ oc create -f resources/ng-mortgage-bpmsuite70-full-mysql.yaml
+The following enables an decision manager execution server whose undertow web server is configured to respond to HTTP OPTION requests with CORS filters
 
+. Initialize the template:
++
+-----
+$ oc create -f resources/ng-mortgage-bpmsuite70-full-mysql.yaml
+-----
+
+. Create a keystore for execution server
++
+-----
 $ keytool -genkey \
           -keyalg RSA \
           -alias selfsigned \
@@ -46,24 +55,46 @@ $ keytool -genkey \
           -storepass rhtgpte \
           -keypass rhtgpte \
           -dname "CN=mw,OU=gpte,O=redhat.com,L=Raleigh,S=NC,C=US"
+-----
 
+. Configure a service account that is loaded with the previously created secret:
++
+-----
 $  oc create serviceaccount bpmsuite-service-account
 $  oc policy add-role-to-user view system:serviceaccount:jb-bpms7:bpmsuite-service-account
 $  oc secrets new bpmsuite-app-secret /tmp/keystore.jks
 $  oc secrets link bpmsuite-service-account bpmsuite-app-secret
+-----
 
+. Create a configmap from the JBoss CLI that enables the undertow component of the execution server with CORS:
+The project template mounts a volume from this configmap to the execution server.
++
+-----
 $  oc create configmap undertow-cors --from-file=resources/undertow-cors.cli
+-----
 
+. Initialize OCP resources from the project template:
++
+-----
 $ oc new-app --name=dm-demo --template=ng-mortgage-bpmsuite70-full-mysql \
          -p IMAGE_STREAM_NAMESPACE=openshift \
          -p HTTPS_PASSWORD=rhtgpte \
          -p KIE_ADMIN_PWD=admin \
          -p APPLICATION_NAME=gpte > /tmp/gpte-dm-demo.txt
+-----
 
+. Resume DCs that are initially paused by default:
++
+-----
 $ oc rollout resume dc/gpte-mysql
 $ oc rollout resume dc/gpte-execserv
+------
 
+. Optionally, delete all OCP resources associated with this project:
++
+-----
 $ oc delete all -l app=dm-demo
+-----
 
 === Problems
 

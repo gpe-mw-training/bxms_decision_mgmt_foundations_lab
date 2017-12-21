@@ -1,6 +1,20 @@
 #!/bin/sh
 
-echo "Files in /data as follows:" >> /tmp/run.log
-ls -lt /opt >> /tmp/run.log
+RUN_LOG_FILE=/tmp/run.log
+
+echo "Files in /data as follows:" >> $RUN_LOG_FILE
+#ls -lt /data >> $RUN_LOG_FILE
+
+$JBOSS_HOME/bin/standalone.sh --admin-only -c openshift-standalone &
+sleep 15
+
+ps -eaf >> $RUN_LOG_FILE
+
+#$JBOSS_HOME/bin/jboss-cli.sh -c --file=/data/undertow-cors.cli
+$JBOSS_HOME/bin/jboss-cli.sh -c ":shutdown"
+sleep 5
+
+echo "Done modifying jboss" >> $RUN_LOG_FILE
+
 
 exec $JBOSS_HOME/bin/openshift-launch.sh

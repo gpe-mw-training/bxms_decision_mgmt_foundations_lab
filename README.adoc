@@ -1,5 +1,13 @@
-# bxms_decision_mgmt_foundations_lab
-Decision Management Foundations Lab
+:scrollbar:
+:data-uri:
+:toc2:
+:linkattrs:
+
+= bxms_decision_mgmt_foundations_lab
+
+:numbered:
+
+== Diego Notes
 
 ## Using the JSON template
 1. Login to master host

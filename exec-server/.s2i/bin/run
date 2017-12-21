@@ -8,7 +8,7 @@ echo "Files in /data as follows:" >> $RUN_LOG_FILE
 $JBOSS_HOME/bin/standalone.sh --admin-only -c openshift-standalone &
 sleep 15
 
-ps -eaf >> $RUN_LOG_FILE
+$JBOSS_HOME/bin/jboss-cli.sh -c "version" >> $RUN_LOG_FILE
 
 #$JBOSS_HOME/bin/jboss-cli.sh -c --file=/data/undertow-cors.cli
 $JBOSS_HOME/bin/jboss-cli.sh -c ":shutdown"

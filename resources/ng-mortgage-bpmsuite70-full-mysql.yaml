@@ -192,6 +192,7 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-ng-mortgages
   spec:
+    paused: true
     output:
       to:
         kind: ImageStreamTag
@@ -231,6 +232,18 @@ objects:
   spec:
     lookupPolicy:
       local: false
+
+# JA Bride:  imagestream for customized execserv created from BC resource defined in this template
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: custom-execserv
+  spec:
+    lookupPolicy:
+      local: false
+
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -238,6 +251,7 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-buscentr
   spec:
+    paused: true
     replicas: 1
     selector:
       deploymentConfig: ${APPLICATION_NAME}-buscentr
@@ -369,25 +383,61 @@ objects:
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
+
+# JA Bride: Defining a BC to layer custom run script on execserv image
+  kind: BuildConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-custom-execserv
+  spec:
+    paused: true
+    output:
+      to:
+        kind: ImageStreamTag
+        name: custom-execserv:latest
+    postCommit: {}
+
+# JA Bride:  Bumping up limit and request so tht node app builds in a timely manner without timing out
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: "1"
+        memory: 1Gi
+
+    runPolicy: Serial
+    source:
+      contextDir: exec-server
+      git:
+        ref: master
+        type: Git
+        uri: https://github.com/gpe-mw-training/bxms_decision_mgmt_foundations_lab.git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: bpmsuite70-executionserver-openshift:1.0
+          namespace: openshift
+        type: Source
+    triggers:
+    - type: ImageChange
+    - type: ConfigChange
+
+- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     labels:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-execserv
   spec:
+    paused: true
     replicas: 1
     selector:
       deploymentConfig: ${APPLICATION_NAME}-execserv
     strategy:
       type: Recreate
-      recreateParams:
-        post:
-          failurePolicy: Abort
-          execNewPod:
-            command:
-            - bash
-            - -c
-            - echo hello > /tmp/hello.txt
     template:
       metadata:
         labels:
@@ -473,7 +523,7 @@ objects:
             value: ${HORNETQ_QUEUES}
           - name: HORNETQ_TOPICS
             value: ${HORNETQ_TOPICS}
-          image: jboss-bpmsuite70-executionserver-openshift
+          image: custom-execserv:latest
           imagePullPolicy: Always
           livenessProbe:
             exec:
@@ -533,8 +583,7 @@ objects:
         - ${APPLICATION_NAME}-execserv
         from:
           kind: ImageStreamTag
-          name: bpmsuite70-executionserver-openshift:1.0
-          namespace: ${IMAGE_STREAM_NAMESPACE}
+          name: custom-execserv:latest
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -544,6 +593,7 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-mysql
   spec:
+    paused: true
     replicas: 1
     selector:
       deploymentConfig: ${APPLICATION_NAME}-mysql
@@ -599,6 +649,7 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-ng-mortgages
   spec:
+    paused: true
     replicas: 1
     selector:
       deploymentConfig: ${APPLICATION_NAME}-ng-mortgages

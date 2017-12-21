@@ -45,18 +45,17 @@ $  oc secrets new bpmsuite-app-secret /tmp/keystore.jks
 $  oc secrets link bpmsuite-service-account bpmsuite-app-secret
 
 $  oc create configmap undertow-cors --from-file=resources/undertow-cors.cli
-$  oc set volume dc/gpte-execserv \
-            --add --overwrite \
-            --name=cors-volume \
-            -m /data/ \
-            -t configmap \
-            --configmap-name=undertow-cors
 
 $ oc new-app --name=dm-demo --template=ng-mortgage-bpmsuite70-full-mysql \
          -p IMAGE_STREAM_NAMESPACE=openshift \
          -p HTTPS_PASSWORD=rhtgpte \
          -p KIE_ADMIN_PWD=admin \
          -p APPLICATION_NAME=gpte > /tmp/gpte-dm-demo.txt
+
+$ oc rollout resume dc/gpte-mysql
+$ oc rollout resume dc/gpte-execserv
+
+$ oc delete all -l app=dm-demo
 
 === Problems
 
@@ -65,7 +64,7 @@ $ oc new-app --name=dm-demo --template=ng-mortgage-bpmsuite70-full-mysql \
 === Additional Notes
 
 -----
-$ oc new-app bpmsuite70-executionserver-openshift:1.0~https://github.com/jbride/bxms_decision_mgmt_foundations_lab.git \
+$ oc new-app bpmsuite70-executionserver-openshift:1.0~https://github.com/gpe-mw-training/bxms_decision_mgmt_foundations_lab.git \
 --context-dir=exec-server \
 --name=exec-test
 -----

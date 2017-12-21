@@ -1,6 +1,6 @@
 #!/bin/sh
 
 echo "Files in /data as follows:" >> /tmp/run.log
-ls -lt /data >> /tmp/run.log
+ls -lt /opt >> /tmp/run.log
 
-exec $JBOSS_HOME/bin/kieserver-launch.sh
+exec $JBOSS_HOME/bin/openshift-launch.sh

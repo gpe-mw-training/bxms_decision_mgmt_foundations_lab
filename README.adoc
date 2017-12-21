@@ -1,0 +1,71 @@
+# bxms_decision_mgmt_foundations_lab
+Decision Management Foundations Lab
+
+## Using the JSON template
+1. Login to master host
+  ```
+  oc login
+  ```
+2. Create the template in the project
+  ```
+  oc create -f pquote-mysql-persistent-template.json
+  ```
+3. Create the environment using the template
+  ```
+  oc process pquote-mysql-persistent -p MYSQL_USER=pquote -p MYSQL_PASSWORD=pquote -p MYSQL_DATABASE=pquote | oc create -f -
+  ```
+## Using the yaml template
+1. Login to master host
+  ```
+  oc login
+  ```
+1. Create the template in the project
+  ```
+  oc process -f pquote-mysql-persistent.yaml -p MYSQL_USER=pquote -p MYSQL_PASSWORD=pquote | oc create -f -
+  ```
+
+== JA Bride notes
+
+$ oc create -f resources/ng-mortgage-bpmsuite70-full-mysql.yaml
+
+$ keytool -genkey \
+          -keyalg RSA \
+          -alias selfsigned \
+          -keystore /tmp/keystore.jks \
+          -validity 360 \
+          -keysize 2048 \
+          -alias jboss \
+          -storepass rhtgpte \
+          -keypass rhtgpte \
+          -dname "CN=mw,OU=gpte,O=redhat.com,L=Raleigh,S=NC,C=US"
+
+$  oc create serviceaccount bpmsuite-service-account
+$  oc policy add-role-to-user view system:serviceaccount:jb-bpms7:bpmsuite-service-account
+$  oc secrets new bpmsuite-app-secret /tmp/keystore.jks
+$  oc secrets link bpmsuite-service-account bpmsuite-app-secret
+
+$  oc create configmap undertow-cors --from-file=resources/undertow-cors.cli
+$  oc set volume dc/gpte-execserv \
+            --add --overwrite \
+            --name=cors-volume \
+            -m /data/ \
+            -t configmap \
+            --configmap-name=undertow-cors
+
+$ oc new-app --name=dm-demo --template=ng-mortgage-bpmsuite70-full-mysql \
+         -p IMAGE_STREAM_NAMESPACE=openshift \
+         -p HTTPS_PASSWORD=rhtgpte \
+         -p KIE_ADMIN_PWD=admin \
+         -p APPLICATION_NAME=gpte > /tmp/gpte-dm-demo.txt
+
+=== Problems
+
+. ng-mortgage build initially fails similar what is described here:  https://access.redhat.com/solutions/3009161
+
+=== Additional Notes
+
+-----
+$ oc new-app bpmsuite70-executionserver-openshift:1.0~https://github.com/jbride/bxms_decision_mgmt_foundations_lab.git \
+--context-dir=exec-server \
+--name=exec-test
+-----

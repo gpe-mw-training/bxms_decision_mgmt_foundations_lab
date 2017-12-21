@@ -1,0 +1,838 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: ng-mortgage-bpmsuite70-full-mysql
+  xpaas: 1.4.0
+message: A new BPMS application (using MySQL) has been created in your project. The
+  username/password for accessing the BPMS Business Central interface is ${KIE_ADMIN_USER}/${KIE_ADMIN_PWD}.
+  For accessing the MySQL database "${DB_DATABASE}" use the credentials ${DB_USERNAME}/${DB_PASSWORD}.
+  Please be sure to create the "bpmsuite-service-account" service account and the
+  secret named "${HTTPS_SECRET}" containing the ${HTTPS_KEYSTORE} file used for serving
+  secure content.
+metadata:
+  annotations:
+    description: Application template for Red Hat JBoss BPM Suite 7.0 and MySQL applications.
+    iconClass: icon-jboss
+    openshift.io/display-name: Red Hat JBoss BPM Suite 7.0 + MySQL (Ephemeral with
+      https)
+    tags: bpmsuite,jboss,xpaas
+    version: 1.4.0
+  creationTimestamp: 2017-12-20T21:04:54Z
+  name: ng-mortgage-bpmsuite70-full-mysql
+  namespace: jb-bpms7
+  resourceVersion: "16450450"
+  selfLink: /oapi/v1/namespaces/jb-bpms7/templates/ng-mortgage-bpmsuite70-full-mysql
+  uid: 6d7ec63f-e5c9-11e7-afbe-02b317196a1a
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The business central web server's http port.
+      service.alpha.openshift.io/dependencies: '[{"name": "${APPLICATION_NAME}-mysql",
+        "kind": "Service"}]'
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-buscentr
+  spec:
+    ports:
+    - port: 8080
+      targetPort: 8080
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-buscentr
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The business central web server's https port.
+      service.alpha.openshift.io/dependencies: '[{"name": "${APPLICATION_NAME}-mysql",
+        "kind": "Service"}]'
+    labels:
+      application: ${APPLICATION_NAME}
+    name: secure-${APPLICATION_NAME}-buscentr
+  spec:
+    ports:
+    - port: 8443
+      targetPort: 8443
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-buscentr
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The execution server web server's http port.
+      service.alpha.openshift.io/dependencies: '[{"name": "${APPLICATION_NAME}-mysql",
+        "kind": "Service"},{"name": "${APPLICATION_NAME}-buscentr", "kind": "Service"}]'
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-execserv
+  spec:
+    ports:
+    - port: 8080
+      targetPort: 8080
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-execserv
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The execution server web server's https port.
+      service.alpha.openshift.io/dependencies: '[{"name": "${APPLICATION_NAME}-mysql",
+        "kind": "Service"},{"name": "${APPLICATION_NAME}-buscentr", "kind": "Service"}]'
+    labels:
+      application: ${APPLICATION_NAME}
+    name: secure-${APPLICATION_NAME}-execserv
+  spec:
+    ports:
+    - port: 8443
+      targetPort: 8443
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-execserv
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The database server's port.
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-mysql
+  spec:
+    ports:
+    - port: 3306
+      targetPort: 3306
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-mysql
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The nodejs web server's http port for the mortgages demo.
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-ng-mortgages
+  spec:
+    ports:
+    - port: 8080
+      targetPort: 8080
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-ng-mortgages
+- apiVersion: v1
+  id: ${APPLICATION_NAME}-buscentr-http
+  kind: Route
+  metadata:
+    annotations:
+      description: Route for business central's http service.
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-buscentr
+  spec:
+    host: ${BUSINESS_CENTRAL_HOSTNAME_HTTP}
+    to:
+      name: ${APPLICATION_NAME}-buscentr
+- apiVersion: v1
+  id: ${APPLICATION_NAME}-buscentr-https
+  kind: Route
+  metadata:
+    annotations:
+      description: Route for business central's https service.
+    labels:
+      application: ${APPLICATION_NAME}
+    name: secure-${APPLICATION_NAME}-buscentr
+  spec:
+    host: ${BUSINESS_CENTRAL_HOSTNAME_HTTPS}
+    tls:
+      termination: passthrough
+    to:
+      name: secure-${APPLICATION_NAME}-buscentr
+- apiVersion: v1
+  id: ${APPLICATION_NAME}-execserv-http
+  kind: Route
+  metadata:
+    annotations:
+      description: Route for execution server's http service.
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-execserv
+  spec:
+    host: ${EXECUTION_SERVER_HOSTNAME_HTTP}
+    to:
+      name: ${APPLICATION_NAME}-execserv
+- apiVersion: v1
+  id: ${APPLICATION_NAME}-execserv-https
+  kind: Route
+  metadata:
+    annotations:
+      description: Route for execution server's https service.
+    labels:
+      application: ${APPLICATION_NAME}
+    name: secure-${APPLICATION_NAME}-execserv
+  spec:
+    host: ${EXECUTION_SERVER_HOSTNAME_HTTPS}
+    tls:
+      termination: passthrough
+    to:
+      name: secure-${APPLICATION_NAME}-execserv
+- apiVersion: v1
+  id: ${APPLICATION_NAME}-ng-mortgages-http
+  kind: Route
+  metadata:
+    annotations:
+      description: Route for nodejs mortgages http service.
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-ng-mortgages
+  spec:
+    host: ${BUSINESS_CENTRAL_HOSTNAME_HTTP}
+    to:
+      name: ${APPLICATION_NAME}-ng-mortgages
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-ng-mortgages
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ng-mortgages:latest
+    postCommit: {}
+
+# JA Bride:  Bumping up limit and request so tht node app builds in a timely manner without timing out
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: "1"
+        memory: 1Gi
+
+    runPolicy: Serial
+    source:
+      git:
+        ref: master
+        type: Git
+        uri: https://github.com/gpe-mw-training/bxms_decision_mgmt_ngmortgages.git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: registry.access.redhat.com/rhscl/nodejs-6-rhel7
+        type: Source
+    triggers:
+    - type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ng-mortgages
+  spec:
+    lookupPolicy:
+      local: false
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-buscentr
+  spec:
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-buscentr
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: ${APPLICATION_NAME}
+          deploymentConfig: ${APPLICATION_NAME}-buscentr
+        name: ${APPLICATION_NAME}-buscentr
+      spec:
+        containers:
+        - env:
+          - name: JAVA_MAX_MEM_RATIO
+            value: "80"
+          - name: JAVA_INITIAL_MEM_RATIO
+            value: "0"
+          - name: GC_MAX_METASPACE_SIZE
+            value: "500"
+          - name: KIE_ADMIN_PWD
+            value: ${KIE_ADMIN_PWD}
+          - name: KIE_ADMIN_USER
+            value: ${KIE_ADMIN_USER}
+          - name: KIE_MBEANS
+            value: ${KIE_MBEANS}
+          - name: KIE_SERVER_CONTROLLER_PWD
+            value: ${KIE_SERVER_CONTROLLER_PWD}
+          - name: KIE_SERVER_CONTROLLER_USER
+            value: ${KIE_SERVER_CONTROLLER_USER}
+          - name: KIE_SERVER_PWD
+            value: ${KIE_SERVER_PWD}
+          - name: KIE_SERVER_USER
+            value: ${KIE_SERVER_USER}
+          - name: DB_SERVICE_PREFIX_MAPPING
+            value: ${APPLICATION_NAME}-mysql=DB
+          - name: DB_JNDI
+            value: ${DB_JNDI}
+          - name: DB_USERNAME
+            value: ${DB_USERNAME}
+          - name: DB_PASSWORD
+            value: ${DB_PASSWORD}
+          - name: DB_DATABASE
+            value: ${DB_DATABASE}
+          - name: TX_DATABASE_PREFIX_MAPPING
+            value: ${APPLICATION_NAME}-mysql=DB
+          - name: DB_MIN_POOL_SIZE
+            value: ${DB_MIN_POOL_SIZE}
+          - name: DB_MAX_POOL_SIZE
+            value: ${DB_MAX_POOL_SIZE}
+          - name: DB_TX_ISOLATION
+            value: ${DB_TX_ISOLATION}
+          - name: HTTPS_KEYSTORE_DIR
+            value: /etc/bpmsuite-secret-volume
+          - name: HTTPS_KEYSTORE
+            value: ${HTTPS_KEYSTORE}
+          - name: HTTPS_NAME
+            value: ${HTTPS_NAME}
+          - name: HTTPS_PASSWORD
+            value: ${HTTPS_PASSWORD}
+          - name: HORNETQ_CLUSTER_PASSWORD
+            value: ${HORNETQ_CLUSTER_PASSWORD}
+          - name: HORNETQ_QUEUES
+            value: ${HORNETQ_QUEUES}
+          - name: HORNETQ_TOPICS
+            value: ${HORNETQ_TOPICS}
+          - name: ADMIN_USERNAME
+            value: ${ADMIN_USERNAME}
+          - name: ADMIN_PASSWORD
+            value: ${ADMIN_PASSWORD}
+          - name: PROBE_IMPL
+            value: probe.eap.jolokia.EapProbe
+          - name: PROBE_DISABLE_BOOT_ERRORS_CHECK
+            value: "true"
+          image: jboss-bpmsuite70-businesscentral-openshift
+          imagePullPolicy: Always
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/livenessProbe.sh
+
+# JA Bride: Bumping up resources
+          resources:
+            limits:
+              cpu: "1"
+              memory: 3Gi
+            requests:
+              cpu: "1"
+              memory: 2Gi
+
+          name: ${APPLICATION_NAME}-buscentr
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8443
+            name: https
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/readinessProbe.sh
+          volumeMounts:
+          - mountPath: /etc/bpmsuite-secret-volume
+            name: bpmsuite-keystore-volume
+            readOnly: true
+        serviceAccountName: bpmsuite-service-account
+        terminationGracePeriodSeconds: 60
+        volumes:
+        - name: bpmsuite-keystore-volume
+          secret:
+            secretName: ${HTTPS_SECRET}
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}-buscentr
+        from:
+          kind: ImageStreamTag
+          name: bpmsuite70-businesscentral-openshift:1.0
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-execserv
+  spec:
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-execserv
+    strategy:
+      type: Recreate
+      recreateParams:
+        post:
+          failurePolicy: Abort
+          execNewPod:
+            command:
+            - bash
+            - -c
+            - echo hello > /tmp/hello.txt
+    template:
+      metadata:
+        labels:
+          application: ${APPLICATION_NAME}
+          deploymentConfig: ${APPLICATION_NAME}-execserv
+        name: ${APPLICATION_NAME}-execserv
+      spec:
+        containers:
+        - env:
+          - name: DROOLS_SERVER_FILTER_CLASSES
+            value: ${DROOLS_SERVER_FILTER_CLASSES}
+          - name: KIE_ADMIN_PWD
+            value: ${KIE_ADMIN_PWD}
+          - name: KIE_ADMIN_USER
+            value: ${KIE_ADMIN_USER}
+          - name: KIE_MBEANS
+            value: ${KIE_MBEANS}
+          - name: KIE_SERVER_BYPASS_AUTH_USER
+            value: ${KIE_SERVER_BYPASS_AUTH_USER}
+          - name: KIE_SERVER_CONTROLLER_PWD
+            value: ${KIE_SERVER_CONTROLLER_PWD}
+          - name: KIE_SERVER_CONTROLLER_SERVICE
+            value: ${APPLICATION_NAME}-buscentr
+          - name: KIE_SERVER_CONTROLLER_USER
+            value: ${KIE_SERVER_CONTROLLER_USER}
+          - name: KIE_SERVER_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: KIE_SERVER_PERSISTENCE_DIALECT
+            value: ${KIE_SERVER_PERSISTENCE_DIALECT}
+          - name: KIE_SERVER_PERSISTENCE_DS
+            value: ${KIE_SERVER_PERSISTENCE_DS}
+          - name: KIE_SERVER_PERSISTENCE_TM
+            value: ${KIE_SERVER_PERSISTENCE_TM}
+          - name: KIE_SERVER_PWD
+            value: ${KIE_SERVER_PWD}
+          - name: KIE_SERVER_USER
+            value: ${KIE_SERVER_USER}
+          - name: MAVEN_REPO_URL
+            value: ${MAVEN_REPO_URL}
+          - name: MAVEN_REPO_SERVICE
+            value: ${APPLICATION_NAME}-buscentr
+          - name: MAVEN_REPO_PATH
+            value: /maven2/
+          - name: MAVEN_REPO_USERNAME
+            value: ${MAVEN_REPO_USERNAME}
+          - name: MAVEN_REPO_PASSWORD
+            value: ${MAVEN_REPO_PASSWORD}
+          - name: DB_SERVICE_PREFIX_MAPPING
+            value: ${APPLICATION_NAME}-mysql=DB
+          - name: DB_JNDI
+            value: ${DB_JNDI}
+          - name: DB_USERNAME
+            value: ${DB_USERNAME}
+          - name: DB_PASSWORD
+            value: ${DB_PASSWORD}
+          - name: DB_DATABASE
+            value: ${DB_DATABASE}
+          - name: TX_DATABASE_PREFIX_MAPPING
+            value: ${APPLICATION_NAME}-mysql=DB
+          - name: DB_MIN_POOL_SIZE
+            value: ${DB_MIN_POOL_SIZE}
+          - name: DB_MAX_POOL_SIZE
+            value: ${DB_MAX_POOL_SIZE}
+          - name: DB_TX_ISOLATION
+            value: ${DB_TX_ISOLATION}
+          - name: TIMER_SERVICE_DATA_STORE
+            value: ${APPLICATION_NAME}-mysql
+          - name: TIMER_SERVICE_DATA_STORE_REFRESH_INTERVAL
+            value: ${TIMER_SERVICE_DATA_STORE_REFRESH_INTERVAL}
+          - name: HTTPS_KEYSTORE_DIR
+            value: /etc/bpmsuite-secret-volume
+          - name: HTTPS_KEYSTORE
+            value: ${HTTPS_KEYSTORE}
+          - name: HTTPS_NAME
+            value: ${HTTPS_NAME}
+          - name: HTTPS_PASSWORD
+            value: ${HTTPS_PASSWORD}
+          - name: HORNETQ_CLUSTER_PASSWORD
+            value: ${HORNETQ_CLUSTER_PASSWORD}
+          - name: HORNETQ_QUEUES
+            value: ${HORNETQ_QUEUES}
+          - name: HORNETQ_TOPICS
+            value: ${HORNETQ_TOPICS}
+          image: jboss-bpmsuite70-executionserver-openshift
+          imagePullPolicy: Always
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/livenessProbe.sh
+
+# JA Bride: Bumping up resources
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+
+          name: ${APPLICATION_NAME}-execserv
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8443
+            name: https
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/readinessProbe.sh
+          volumeMounts:
+          - mountPath: /etc/bpmsuite-secret-volume
+            name: bpmsuite-keystore-volume
+            readOnly: true
+          - mountPath: /data
+            name: cors-volume
+        serviceAccountName: bpmsuite-service-account
+        terminationGracePeriodSeconds: 60
+        volumes:
+        - name: bpmsuite-keystore-volume
+          secret:
+            secretName: ${HTTPS_SECRET}
+
+# JA Bride: Create a volume with the CLI needed to configure undertow for CORS
+        - configMap:
+            name: undertow-cors
+          name: cors-volume
+
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}-execserv
+        from:
+          kind: ImageStreamTag
+          name: bpmsuite70-executionserver-openshift:1.0
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-mysql
+  spec:
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-mysql
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: ${APPLICATION_NAME}
+          deploymentConfig: ${APPLICATION_NAME}-mysql
+        name: ${APPLICATION_NAME}-mysql
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_USER
+            value: ${DB_USERNAME}
+          - name: MYSQL_PASSWORD
+            value: ${DB_PASSWORD}
+          - name: MYSQL_DATABASE
+            value: ${DB_DATABASE}
+          - name: MYSQL_LOWER_CASE_TABLE_NAMES
+            value: ${MYSQL_LOWER_CASE_TABLE_NAMES}
+          - name: MYSQL_MAX_CONNECTIONS
+            value: ${MYSQL_MAX_CONNECTIONS}
+          - name: MYSQL_FT_MIN_WORD_LEN
+            value: ${MYSQL_FT_MIN_WORD_LEN}
+          - name: MYSQL_FT_MAX_WORD_LEN
+            value: ${MYSQL_FT_MAX_WORD_LEN}
+          - name: MYSQL_AIO
+            value: ${MYSQL_AIO}
+          image: mysql
+          imagePullPolicy: Always
+          name: ${APPLICATION_NAME}-mysql
+          ports:
+          - containerPort: 3306
+            protocol: TCP
+        terminationGracePeriodSeconds: 60
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}-mysql
+        from:
+          kind: ImageStreamTag
+          name: mysql:${MYSQL_IMAGE_STREAM_TAG}
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-ng-mortgages
+  spec:
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-ng-mortgages
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: ${APPLICATION_NAME}
+          deploymentConfig: ${APPLICATION_NAME}-ng-mortgages
+        name: ${APPLICATION_NAME}-ng-mortgages
+      spec:
+        containers:
+        - image: ng-mortgages:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            initialDelaySeconds: 15
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 1
+          name: ${APPLICATION_NAME}-ng-mortgages
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          readinessProbe:
+            initialDelaySeconds: 15
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 1
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}-ng-mortgages
+        from:
+          kind: ImageStreamTag
+          name: ng-mortgages:latest
+      type: ImageChange
+    - type: ConfigChange
+parameters:
+- description: EAP administrator username
+  displayName: EAP Admin User
+  name: ADMIN_USERNAME
+  value: eapadmin
+- description: EAP administrator password
+  displayName: EAP Admin Password
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  name: ADMIN_PASSWORD
+- description: KIE administrator username
+  displayName: KIE Admin User
+  name: KIE_ADMIN_USER
+  value: adminUser
+- description: KIE administrator password
+  displayName: KIE Admin Password
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  name: KIE_ADMIN_PWD
+- description: KIE server controller username (Sets the org.kie.server.controller.user
+    system property)
+  displayName: KIE Server Controller User
+  name: KIE_SERVER_CONTROLLER_USER
+  value: controllerUser
+- description: KIE server controller password (Sets the org.kie.server.controller.pwd
+    system property)
+  displayName: KIE Server Controller Password
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  name: KIE_SERVER_CONTROLLER_PWD
+- description: KIE execution server username (Sets the org.kie.server.user system
+    property)
+  displayName: KIE Server User
+  name: KIE_SERVER_USER
+  value: executionUser
+- description: KIE execution server password (Sets the org.kie.server.pwd system property)
+  displayName: KIE Server Password
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+  name: KIE_SERVER_PWD
+- description: KIE execution server bypass auth user (Sets the org.kie.server.bypass.auth.user
+    system property)
+  displayName: KIE Server Bypass Auth User
+  name: KIE_SERVER_BYPASS_AUTH_USER
+  value: "false"
+- description: KIE execution server persistence dialect (Sets the org.kie.server.persistence.dialect
+    system property)
+  displayName: KIE Server Persistence Dialect
+  name: KIE_SERVER_PERSISTENCE_DIALECT
+  value: org.hibernate.dialect.MySQL5Dialect
+- description: KIE execution server persistence datasource (Sets the org.kie.server.persistence.ds
+    system property)
+  displayName: KIE Server Persistence DS
+  name: KIE_SERVER_PERSISTENCE_DS
+  value: java:/jboss/datasources/ExampleDS
+- description: KIE execution server persistence transaction manager (Sets the org.kie.server.persistence.tm
+    system property)
+  displayName: KIE Server Persistence TM
+  name: KIE_SERVER_PERSISTENCE_TM
+  value: org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform
+- description: KIE execution server mbeans enabled/disabled (Sets the kie.mbeans and
+    kie.scanner.mbeans system properties)
+  displayName: KIE MBeans
+  name: KIE_MBEANS
+  value: enabled
+- description: KIE execution server class filtering (Sets the org.drools.server.filter.classes
+    system property)
+  displayName: Drools Server Filter Classes
+  name: DROOLS_SERVER_FILTER_CLASSES
+  value: "true"
+- description: The name for the application.
+  displayName: Application Name
+  name: APPLICATION_NAME
+  required: true
+  value: ng-mortgage-demo
+- description: 'Custom hostname for http service route.  Leave blank for default hostname,
+    e.g.: <application-name>-buscentr-<project>.<default-domain-suffix>'
+  displayName: Business Central Custom http Route Hostname
+  name: BUSINESS_CENTRAL_HOSTNAME_HTTP
+- description: 'Custom hostname for https service route.  Leave blank for default
+    hostname, e.g.: secure-<application-name>-buscentr-<project>.<default-domain-suffix>'
+  displayName: Busines Central Custom https Route Hostname
+  name: BUSINESS_CENTRAL_HOSTNAME_HTTPS
+- description: 'Custom hostname for http service route.  Leave blank for default hostname,
+    e.g.: <application-name>-execserv-<project>.<default-domain-suffix>'
+  displayName: Execution Server Custom http Route Hostname
+  name: EXECUTION_SERVER_HOSTNAME_HTTP
+- description: 'Custom hostname for https service route.  Leave blank for default
+    hostname, e.g.: secure-<application-name>-execserv-<project>.<default-domain-suffix>'
+  displayName: Execution Server Custom https Route Hostname
+  name: EXECUTION_SERVER_HOSTNAME_HTTPS
+- description: Database JNDI name used by application to resolve the datasource, e.g.
+    java:/jboss/datasources/ExampleDS
+  displayName: Database JNDI Name
+  name: DB_JNDI
+  value: java:jboss/datasources/ExampleDS
+- description: Database name
+  displayName: Database Name
+  name: DB_DATABASE
+  required: true
+  value: root
+- description: Queue names
+  displayName: Queues
+  name: HORNETQ_QUEUES
+- description: Topic names
+  displayName: Topics
+  name: HORNETQ_TOPICS
+- description: The name of the secret containing the keystore file
+  displayName: Server Keystore Secret Name
+  name: HTTPS_SECRET
+  value: bpmsuite-app-secret
+- description: The name of the keystore file within the secret
+  displayName: Server Keystore Filename
+  name: HTTPS_KEYSTORE
+  value: keystore.jks
+- description: The name associated with the server certificate
+  displayName: Server Certificate Name
+  name: HTTPS_NAME
+  value: jboss
+- description: The password for the keystore and certificate
+  displayName: Server Keystore Password
+  name: HTTPS_PASSWORD
+  value: mykeystorepass
+- description: Database user name
+  displayName: Database Username
+  from: user[a-zA-Z0-9]{3}
+  generate: expression
+  name: DB_USERNAME
+  required: true
+- description: Database user password
+  displayName: Database Password
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: DB_PASSWORD
+  required: true
+- description: Sets xa-pool/min-pool-size for the configured datasource.
+  displayName: Datasource Minimum Pool Size
+  name: DB_MIN_POOL_SIZE
+- description: Sets xa-pool/max-pool-size for the configured datasource.
+  displayName: Datasource Maximum Pool Size
+  name: DB_MAX_POOL_SIZE
+- description: Sets transaction-isolation for the configured datasource.
+  displayName: Datasource Transaction Isolation
+  name: DB_TX_ISOLATION
+- description: Sets refresh-interval for the EJB timer service database-data-store.
+  displayName: Timer service data store refresh interval (in milliseconds)
+  name: TIMER_SERVICE_DATA_STORE_REFRESH_INTERVAL
+  value: "30000"
+- description: Sets how the table names are stored and compared.
+  displayName: MySQL Lower Case Table Names
+  name: MYSQL_LOWER_CASE_TABLE_NAMES
+- description: The maximum permitted number of simultaneous client connections.
+  displayName: MySQL Maximum number of connections
+  name: MYSQL_MAX_CONNECTIONS
+- description: The minimum length of the word to be included in a FULLTEXT index.
+  displayName: MySQL FullText Minimum Word Length
+  name: MYSQL_FT_MIN_WORD_LEN
+- description: The maximum length of the word to be included in a FULLTEXT index.
+  displayName: MySQL FullText Maximum Word Length
+  name: MYSQL_FT_MAX_WORD_LEN
+- description: Controls the innodb_use_native_aio setting value if the native AIO
+    is broken.
+  displayName: MySQL AIO
+  name: MYSQL_AIO
+- description: HornetQ cluster admin password
+  displayName: HornetQ Password
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  name: HORNETQ_CLUSTER_PASSWORD
+  required: true
+- description: Namespace in which the ImageStreams for Red Hat Middleware images are
+    installed. These ImageStreams are normally installed in the openshift namespace.
+    You should only need to modify this if you've installed the ImageStreams in a
+    different namespace/project.
+  displayName: ImageStream Namespace
+  name: IMAGE_STREAM_NAMESPACE
+  required: true
+  value: openshift
+- description: The tag to use for the "mysql" image stream.  Typically, this aligns
+    with the major.minor version of MySQL.
+  displayName: MySQL Image Stream Tag
+  name: MYSQL_IMAGE_STREAM_TAG
+  required: true
+  value: "5.7"
+- description: Fully qualified URL to a Maven repository. If unspecified, will fall
+    back to Business Central service.
+  displayName: Maven repository URL
+  name: MAVEN_REPO_URL
+- description: Username to access the Maven repository. If using Business Central,
+    will have to match KIE_ADMIN_USER. Default is "adminUser".
+  displayName: Maven repository username
+  name: MAVEN_REPO_USERNAME
+  value: adminUser
+- description: Password to access the Maven repository. If using Business Central,
+    will have to match KIE_ADMIN_PWD. No default specified.
+  displayName: Maven repository password
+  name: MAVEN_REPO_PASSWORD

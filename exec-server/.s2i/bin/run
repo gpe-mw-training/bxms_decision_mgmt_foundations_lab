@@ -1,19 +1,32 @@
 #!/bin/sh
 
+# Purpose of this run script is to append additional execution of JBoss CLI to $JBOSS_HOME/bin/openshift-launch.sh
+# This additional JBoss CLI needs to be executed after standalone-openshift.xml is modified and before exec-server is started.
+
 RUN_LOG_FILE=/tmp/run.log
 
 echo "Files in /data as follows:" >> $RUN_LOG_FILE
 #ls -lt /data >> $RUN_LOG_FILE
 
-#$JBOSS_HOME/bin/standalone.sh --admin-only -c standalone-openshift.xml &
-$JBOSS_HOME/bin/standalone.sh --admin-only -c standalone-openshift.xml >> $RUN_LOG_FILE
+# 1) grab originl exec line in openshift-launch.sh and then comment it out
+exec_line=`cat $JBOSS_HOME/bin/openshift-launch.sh | grep "exec env"`
+sed -i -e 's/^exec/#exec/' $JBOSS_HOME/bin/openshift-launch.sh
+
+# 2) Append new commands
+
+echo "
+RUN_LOG_FILE=$RUN_LOG_FILE
+
+\$JBOSS_HOME/bin/standalone.sh --admin-only -c standalone-openshift.xml &
 sleep 15
 
-$JBOSS_HOME/bin/jboss-cli.sh -c "version" >> $RUN_LOG_FILE
+\$JBOSS_HOME/bin/jboss-cli.sh -c "version" >> \$RUN_LOG_FILE
 
-#$JBOSS_HOME/bin/jboss-cli.sh -c --file=/data/undertow-cors.cli
-$JBOSS_HOME/bin/jboss-cli.sh -c ":shutdown"
+#\$JBOSS_HOME/bin/jboss-cli.sh -c --file=/data/undertow-cors.cli
+\$JBOSS_HOME/bin/jboss-cli.sh -c ":shutdown"
 sleep 5
+
+$exec_line" >> $JBOSS_HOME/bin/openshift-launch.sh
 
 echo "Done modifying jboss" >> $RUN_LOG_FILE
 

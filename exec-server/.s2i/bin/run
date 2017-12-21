@@ -22,8 +22,8 @@ sleep 15
 
 \$JBOSS_HOME/bin/jboss-cli.sh -c "version" >> \$RUN_LOG_FILE
 
-\$JBOSS_HOME/bin/jboss-cli.sh -c --file=/data/undertow-cors.cli
-\$JBOSS_HOME/bin/jboss-cli.sh -c ":shutdown"
+\$JBOSS_HOME/bin/jboss-cli.sh -c --file=/data/undertow-cors.cli >> \$RUN_LOG_FILE
+\$JBOSS_HOME/bin/jboss-cli.sh -c ":shutdown" >> \$RUN_LOG_FILE
 sleep 5
 
 $exec_line" >> $JBOSS_HOME/bin/openshift-launch.sh

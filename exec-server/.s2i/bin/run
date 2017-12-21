@@ -5,7 +5,8 @@ RUN_LOG_FILE=/tmp/run.log
 echo "Files in /data as follows:" >> $RUN_LOG_FILE
 #ls -lt /data >> $RUN_LOG_FILE
 
-$JBOSS_HOME/bin/standalone.sh --admin-only -c standalone-openshift.xml &
+#$JBOSS_HOME/bin/standalone.sh --admin-only -c standalone-openshift.xml &
+$JBOSS_HOME/bin/standalone.sh --admin-only -c standalone-openshift.xml >> $RUN_LOG_FILE
 sleep 15
 
 $JBOSS_HOME/bin/jboss-cli.sh -c "version" >> $RUN_LOG_FILE

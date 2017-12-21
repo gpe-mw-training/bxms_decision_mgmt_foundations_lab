@@ -6,7 +6,7 @@
 RUN_LOG_FILE=/tmp/run.log
 
 echo "Files in /data as follows:" >> $RUN_LOG_FILE
-#ls -lt /data >> $RUN_LOG_FILE
+ls -lt /data >> $RUN_LOG_FILE
 
 # 1) grab originl exec line in openshift-launch.sh and then comment it out
 exec_line=`cat $JBOSS_HOME/bin/openshift-launch.sh | grep "exec env"`
@@ -22,7 +22,7 @@ sleep 15
 
 \$JBOSS_HOME/bin/jboss-cli.sh -c "version" >> \$RUN_LOG_FILE
 
-#\$JBOSS_HOME/bin/jboss-cli.sh -c --file=/data/undertow-cors.cli
+\$JBOSS_HOME/bin/jboss-cli.sh -c --file=/data/undertow-cors.cli
 \$JBOSS_HOME/bin/jboss-cli.sh -c ":shutdown"
 sleep 5
 

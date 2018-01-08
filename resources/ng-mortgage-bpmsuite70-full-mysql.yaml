@@ -407,6 +407,8 @@ objects:
         cpu: "1"
         memory: 1Gi
 
+# JA Bride:  The BPM exec server build config object is comprised of the bpmsuite7 exec server layered with the source code of this project.
+#            The only thing this project source code does is provide a run script to customize the standalone-openshift.xml config file of JBoss EAP.
     runPolicy: Serial
     source:
       contextDir: exec-server

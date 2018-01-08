@@ -3,6 +3,10 @@
 # Purpose of this run script is to append additional execution of JBoss CLI to $JBOSS_HOME/bin/openshift-launch.sh
 # This additional JBoss CLI needs to be executed after standalone-openshift.xml is modified and before exec-server is started.
 
+# Please refer to the following source code to understand the out of box start-up configs and scripts of the BPM exec server:
+#  1)  https://github.com/jboss-openshift/cct_module/blob/master/os-bpmsuite-executionserver/added/openshift-launch.sh
+#  2)  https://github.com/jboss-openshift/cct_module/blob/master/os-eap71-openshift/added/standalone-openshift.xml#L533-L546
+
 RUN_LOG_FILE=/tmp/run.log
 
 echo "Files in /data as follows:" >> $RUN_LOG_FILE

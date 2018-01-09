@@ -19,10 +19,6 @@ metadata:
     version: 1.4.0
   creationTimestamp: 2017-12-20T21:04:54Z
   name: ng-mortgage-bpmsuite70-full-mysql
-  namespace: jb-bpms7
-  resourceVersion: "16450450"
-  selfLink: /oapi/v1/namespaces/jb-bpms7/templates/ng-mortgage-bpmsuite70-full-mysql
-  uid: 6d7ec63f-e5c9-11e7-afbe-02b317196a1a
 objects:
 - apiVersion: v1
   kind: Service

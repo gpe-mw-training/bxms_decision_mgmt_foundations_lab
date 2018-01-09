@@ -417,7 +417,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: bpmsuite70-executionserver-openshift:1.0
-          namespace: openshift
+          namespace: ${IMAGE_STREAM_NAMESPACE}
         type: Source
     triggers:
     - type: ImageChange

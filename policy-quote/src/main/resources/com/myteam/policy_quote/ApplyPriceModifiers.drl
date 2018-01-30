@@ -1,0 +1,14 @@
+package com.myteam.policy_quote;
+
+rule "ApplyPriceModifiers"
+    salience 2
+	no-loop 
+	lock-on-active 
+    
+    when
+        $policy : Policy()
+    then
+        //actions
+        modify($policy) {setPrice($policy.getPrice() + $policy.getPriceSurcharge() - $policy.getPriceDiscount())};
+
+end

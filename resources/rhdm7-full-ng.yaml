@@ -273,7 +273,7 @@ objects:
             value: probe.eap.jolokia.EapProbe
           - name: PROBE_DISABLE_BOOT_ERRORS_CHECK
             value: 'true'
-          image: rhdm70-decisioncentral-openshift
+          image: rhdm70-decisioncentral-openshift:1.0
           imagePullPolicy: Always
           livenessProbe:
             exec:
@@ -509,7 +509,7 @@ objects:
   metadata:
     name: "${APPLICATION_NAME}-rhdmcentr-claim"
     labels:
-      application: "${APPLICATION_NAME}"
+      application: ${APPLICATION_NAME}
   spec:
     accessModes:
     - ReadWriteOnce

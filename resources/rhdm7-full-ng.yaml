@@ -80,13 +80,13 @@ objects:
       description: The nodejs web server's http port for the mortgages demo.
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-ng-mortgages
+    name: ${APPLICATION_NAME}-ng-dmf
   spec:
     ports:
-    - port: 8080
-      targetPort: 8080
+    - port: 4200
+      targetPort: 4200
     selector:
-      deploymentConfig: ${APPLICATION_NAME}-ng-mortgages
+      deploymentConfig: ${APPLICATION_NAME}-ng-dmf
 - kind: Route
   apiVersion: v1
   id: "${APPLICATION_NAME}-rhdmcentr-http"
@@ -144,33 +144,31 @@ objects:
     tls:
       termination: passthrough
 - apiVersion: v1
-  id: ${APPLICATION_NAME}-ng-mortgages-http
+  id: ${APPLICATION_NAME}-ng-dmf-http
   kind: Route
   metadata:
     annotations:
       description: Route for nodejs mortgages http service.
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-ng-mortgages
+    name: ${APPLICATION_NAME}-ng-dmf
   spec:
     host: ${DECISION_CENTRAL_HOSTNAME_HTTP}
     to:
-      name: ${APPLICATION_NAME}-ng-mortgages
+      name: ${APPLICATION_NAME}-ng-dmf
 - apiVersion: v1
   kind: BuildConfig
   metadata:
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-ng-mortgages
+    name: ${APPLICATION_NAME}-ng-dmf
   spec:
     paused: true
     output:
       to:
         kind: ImageStreamTag
-        name: ng-mortgages:latest
+        name: ng-dmf:latest
     postCommit: {}
-
-# JA Bride:  Bumping up limit and request so tht node app builds in a timely manner without timing out
     resources:
       limits:
         cpu: "1"
@@ -178,13 +176,12 @@ objects:
       requests:
         cpu: "1"
         memory: 1Gi
-
     runPolicy: Serial
     source:
       git:
         ref: master
         type: Git
-        uri: https://github.com/gpe-mw-training/bxms_decision_mgmt_ngmortgages.git
+        uri: https://github.com/gpe-mw-training/gpte-ng-dmf.git
     strategy:
       sourceStrategy:
         from:
@@ -199,7 +196,7 @@ objects:
   metadata:
     labels:
       application: ${APPLICATION_NAME}
-    name: ng-mortgages
+    name: ng-dmf
   spec:
     lookupPolicy:
       local: false
@@ -376,7 +373,57 @@ objects:
     triggers:
     - type: ImageChange
     - type: ConfigChange
+- apiVersion: v1
+  kind: ConfigMap
+  data:
+    undertow-cors.cli: >
+      batch
 
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Origin:add(header-name="Access-Control-Allow-Origin",
+      header-value="*")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Origin/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Methods:add(header-name="Access-Control-Allow-Methods",
+      header-value="GET, POST, OPTIONS, PUT, DELETE")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Methods/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Headers:add(header-name="Access-Control-Allow-Headers",
+      header-value="accept, authorization,  content-type, x-requested-with")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Headers/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Credentials:add(header-name="Access-Control-Allow-Credentials",
+      header-value="true")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Credentials/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Max-Age:add(header-name="Access-Control-Max-Age",
+      header-value="2")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Max-Age/:add()
+
+      run-batch
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: undertow-cors
+- apiVersion: v1
+  kind: ConfigMap
+  data:
+    envorionment.prod.ts: >
+      export const environment = {
+        production: true,
+        dmApiUrl: 'http://${APPLICATION_NAME}-kieserver-${metadata.namespace}.apps.dev37.openshift.opentlc.com/',
+        dmUserName: '${KIE_SERVER_USER}',
+        dmCredentials: '${KIE_SERVER_PWD}',
+      };
+
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ng-environment
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -449,8 +496,6 @@ objects:
               - /bin/bash
               - -c
               - /opt/eap/bin/livenessProbe.sh
-
-# JA Bride: Bumping up resources
           resources:
             limits:
               cpu: "1"
@@ -488,12 +533,9 @@ objects:
         - name: kieserver-keystore-volume
           secret:
             secretName: ${KIE_SERVER_HTTPS_SECRET}
-
-# JA Bride: Create a volume with the CLI needed to configure undertow for CORS
         - configMap:
             name: undertow-cors
           name: cors-volume
-
     triggers:
     - imageChangeParams:
         automatic: true
@@ -521,30 +563,30 @@ objects:
   metadata:
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-ng-mortgages
+    name: ${APPLICATION_NAME}-ng-dmf
   spec:
     paused: true
     replicas: 1
     selector:
-      deploymentConfig: ${APPLICATION_NAME}-ng-mortgages
+      deploymentConfig: ${APPLICATION_NAME}-ng-dmf
     strategy:
       type: Recreate
     template:
       metadata:
         labels:
           application: ${APPLICATION_NAME}
-          deploymentConfig: ${APPLICATION_NAME}-ng-mortgages
-        name: ${APPLICATION_NAME}-ng-mortgages
+          deploymentConfig: ${APPLICATION_NAME}-ng-dmf
+        name: ${APPLICATION_NAME}-ng-dmf
       spec:
         containers:
-        - image: ng-mortgages:latest
+        - image: ng-dmf:latest
           imagePullPolicy: Always
           livenessProbe:
             initialDelaySeconds: 15
             tcpSocket:
               port: 8080
             timeoutSeconds: 1
-          name: ${APPLICATION_NAME}-ng-mortgages
+          name: ${APPLICATION_NAME}-ng-dmf
           ports:
           - containerPort: 8080
             name: http
@@ -554,14 +596,21 @@ objects:
             tcpSocket:
               port: 8080
             timeoutSeconds: 1
+          volumeMounts:
+          - mountPath: /data
+            name: environment-volume
+        volumes:
+        - configMap:
+            name: ng-environment
+          name: environment-volume
     triggers:
     - imageChangeParams:
         automatic: true
         containerNames:
-        - ${APPLICATION_NAME}-ng-mortgages
+        - ${APPLICATION_NAME}-ng-dmf
         from:
           kind: ImageStreamTag
-          name: ng-mortgages:latest
+          name: ng-dmf:latest
       type: ImageChange
     - type: ConfigChange
 parameters:

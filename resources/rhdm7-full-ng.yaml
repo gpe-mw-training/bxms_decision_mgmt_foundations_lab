@@ -83,8 +83,8 @@ objects:
     name: ${APPLICATION_NAME}-ng-dmf
   spec:
     ports:
-    - port: 4200
-      targetPort: 4200
+    - port: 8080
+      targetPort: 8080
     selector:
       deploymentConfig: ${APPLICATION_NAME}-ng-dmf
 - kind: Route
@@ -180,17 +180,21 @@ objects:
     source:
       git:
         ref: master
-        type: Git
-        uri: https://github.com/gpe-mw-training/gpte-ng-dmf.git
+        uri: 'https://github.com/gpe-mw-training/gpte-ng-dmf.git'
+      type: Git
     strategy:
       sourceStrategy:
         from:
-          kind: DockerImage
-          name: registry.access.redhat.com/rhscl/nodejs-6-rhel7
-        type: Source
+          kind: ImageStreamTag
+          name: 'nodejs:6'
+          namespace: openshift
+      type: Source
     triggers:
-    - type: ImageChange
-    - type: ConfigChange
+      - imageChange:
+          lastTriggeredImageID: >-
+            centos/nodejs-6-centos7@sha256:88f69b2d40cd6171d7113705bc2ed36ae6937ab9d2b1625b845f1a22ca0d28b2
+        type: ImageChange
+      - type: ConfigChange
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -415,7 +419,7 @@ objects:
     envorionment.prod.ts: >
       export const environment = {
         production: true,
-        dmApiUrl: 'http://${APPLICATION_NAME}-kieserver-${metadata.namespace}.apps.dev37.openshift.opentlc.com/',
+        dmApiUrl: 'http://${APPLICATION_NAME}-kieserver-${PROJECT_NAME}.${CLUSTER}/',
         dmUserName: '${KIE_SERVER_USER}',
         dmCredentials: '${KIE_SERVER_PWD}',
       };
@@ -769,4 +773,11 @@ parameters:
   description: Size of the persistent storage for Decision Central's runtime data.
   name: DECISION_CENTRAL_VOLUME_CAPACITY
   value: 512Mi
+  required: true
+- displayName: Project name
+  name: PROJECT
+  required: true
+- displayName: Cluster name
+  name: CLUSTER
+  value: 127.0.0.1.nip.io
   required: true

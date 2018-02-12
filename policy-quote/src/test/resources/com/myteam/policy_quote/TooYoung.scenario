@@ -22,7 +22,7 @@
       <isModify>false</isModify>
     </fact-data>
     <execution-trace>
-      <executionTimeResult>15</executionTimeResult>
+      <executionTimeResult>44</executionTimeResult>
       <numberOfRulesFired>2</numberOfRulesFired>
     </execution-trace>
     <expect-fact>
@@ -40,8 +40,12 @@
       <name>Policy</name>
       <anonymous>true</anonymous>
     </expect-fact>
+    <expect-rule>
+      <ruleName>TooYoung</ruleName>
+      <expectedFire>true</expectedFire>
+    </expect-rule>
   </fixtures>
-  <lastRunResult>2018-01-25 15:29:19.346 UTC</lastRunResult>
+  <lastRunResult>2018-02-12 16:36:57.230 UTC</lastRunResult>
   <rules/>
   <inclusive>false</inclusive>
   <packageName>com.myteam.policy_quote</packageName>

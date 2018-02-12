@@ -88,6 +88,9 @@ $ echo -en "\n\nhttps://`oc get route secure-gpte-execserv --template "{{.spec.h
 +
 -----
 $ oc delete all -l app=dm-demo
+$ oc delete sa/bpmsuite-service-account
+$ oc delete secret/bpmsuite-app-secret
+$ oc delete template/ng-mortgage-bpmsuite70-full-mysql
 -----
 
 . (Optional) Instantiate a container directly from bpms7 execserver image:

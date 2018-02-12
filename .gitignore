@@ -1,0 +1,15 @@
+*.swp
+*.class
+*.html
+*.zip
+*~
+~lock.*
+~$*
+.DS_Store
+*.svn/
+*.nogit/
+target/
+not4git/
+.project
+.classpath
+*.settings/

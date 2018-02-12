@@ -1,5 +1,5 @@
 <decision-table52>
-  <tableName>Determine Newer Vehicle Surcharge</tableName>
+  <tableName>Determine State Surcharge</tableName>
   <rowNumberCol>
     <hideColumn>false</hideColumn>
     <width>50</width>
@@ -17,7 +17,7 @@
         <dataType>BOOLEAN</dataType>
         <isOtherwise>false</isOtherwise>
       </typedDefaultValue>
-      <hideColumn>true</hideColumn>
+      <hideColumn>false</hideColumn>
       <width>100</width>
       <attribute>no-loop</attribute>
       <reverseOrder>false</reverseOrder>
@@ -38,29 +38,13 @@
           </typedDefaultValue>
           <hideColumn>false</hideColumn>
           <width>100</width>
-          <header>Vehicle Year</header>
+          <header>State Code</header>
           <constraintValueType>1</constraintValueType>
-          <factField>vehicleYear</factField>
-          <fieldType>Integer</fieldType>
-          <operator>&gt;</operator>
+          <factField>platesStateCode</factField>
+          <fieldType>String</fieldType>
+          <operator>==</operator>
+          <valueList>,AL,AK,AZ,AR,CA,CO,CT,DE,FL,GA,HI,ID,IL,IN,IA,KS,KY,LA,ME,MD,MA,MI,MN,MS,MO,MT,NE,NV,NH,NJ,NM,NY,NC,ND,OH,OK,OR,PA,RI,SC,SD,TN,TX,UT,VT,VA,WA,WV,WI,WY</valueList>
           <parameters/>
-        </condition-column52>
-        <condition-column52>
-          <typedDefaultValue>
-            <valueNumeric class="int">0</valueNumeric>
-            <valueString></valueString>
-            <dataType>NUMERIC_INTEGER</dataType>
-            <isOtherwise>false</isOtherwise>
-          </typedDefaultValue>
-          <hideColumn>true</hideColumn>
-          <width>100</width>
-          <header>Min Price</header>
-          <constraintValueType>1</constraintValueType>
-          <factField>price</factField>
-          <fieldType>Integer</fieldType>
-          <operator>&gt;</operator>
-          <parameters/>
-          <binding></binding>
         </condition-column52>
         <condition-column52>
           <typedDefaultValue>
@@ -76,52 +60,29 @@
           <fieldType>String</fieldType>
           <operator>==</operator>
           <parameters/>
-          <binding></binding>
-        </condition-column52>
-        <condition-column52>
-          <typedDefaultValue>
-            <valueNumeric class="int">0</valueNumeric>
-            <valueString></valueString>
-            <dataType>NUMERIC_INTEGER</dataType>
-            <isOtherwise>false</isOtherwise>
-          </typedDefaultValue>
-          <hideColumn>false</hideColumn>
-          <width>100</width>
-          <header>Surcharge Initialized</header>
-          <constraintValueType>1</constraintValueType>
-          <factField>priceSurcharge</factField>
-          <fieldType>Integer</fieldType>
-          <operator>&gt;=</operator>
-          <parameters/>
-          <binding></binding>
         </condition-column52>
       </conditions>
       <window>
         <parameters/>
       </window>
-      <entryPointName></entryPointName>
     </Pattern52>
   </conditionPatterns>
   <actionCols>
-    <org.drools.workbench.models.guided.dtable.shared.model.BRLActionColumn>
+    <set-field-col52>
+      <typedDefaultValue>
+        <valueNumeric class="int">0</valueNumeric>
+        <valueString></valueString>
+        <dataType>NUMERIC_INTEGER</dataType>
+        <isOtherwise>false</isOtherwise>
+      </typedDefaultValue>
       <hideColumn>false</hideColumn>
-      <width>-1</width>
-      <header>Aggregated Surcharge</header>
-      <definition>
-        <org.drools.workbench.models.datamodel.rule.FreeFormLine>
-          <text>policy.setPriceSurcharge(policy.getPriceSurcharge() + @{additionalSurcharge})</text>
-        </org.drools.workbench.models.datamodel.rule.FreeFormLine>
-      </definition>
-      <childColumns>
-        <org.drools.workbench.models.guided.dtable.shared.model.BRLActionVariableColumn>
-          <hideColumn>false</hideColumn>
-          <width>100</width>
-          <header>Aggregated Surcharge</header>
-          <varName>additionalSurcharge</varName>
-          <fieldType>Object</fieldType>
-        </org.drools.workbench.models.guided.dtable.shared.model.BRLActionVariableColumn>
-      </childColumns>
-    </org.drools.workbench.models.guided.dtable.shared.model.BRLActionColumn>
+      <width>100</width>
+      <header>Price Surcharge</header>
+      <boundName>policy</boundName>
+      <factField>priceSurcharge</factField>
+      <type>Integer</type>
+      <update>false</update>
+    </set-field-col52>
   </actionCols>
   <auditLog>
     <filter class="org.drools.guvnor.client.modeldriven.dt52.auditlog.DecisionTableAuditLogFilter">
@@ -165,7 +126,7 @@
         <isOtherwise>false</isOtherwise>
       </value>
       <value>
-        <valueString>Newer vehicle</valueString>
+        <valueString>Default For All States</valueString>
         <dataType>STRING</dataType>
         <isOtherwise>false</isOtherwise>
       </value>
@@ -176,15 +137,8 @@
         <isOtherwise>false</isOtherwise>
       </value>
       <value>
-        <valueNumeric class="int">2014</valueNumeric>
         <valueString></valueString>
-        <dataType>NUMERIC_INTEGER</dataType>
-        <isOtherwise>false</isOtherwise>
-      </value>
-      <value>
-        <valueNumeric class="int">0</valueNumeric>
-        <valueString></valueString>
-        <dataType>NUMERIC_INTEGER</dataType>
+        <dataType>STRING</dataType>
         <isOtherwise>false</isOtherwise>
       </value>
       <value>
@@ -192,17 +146,7 @@
         <dataType>STRING</dataType>
         <isOtherwise>false</isOtherwise>
       </value>
-      <value>
-        <valueNumeric class="int">0</valueNumeric>
-        <valueString></valueString>
-        <dataType>NUMERIC_INTEGER</dataType>
-        <isOtherwise>false</isOtherwise>
-      </value>
-      <value>
-        <valueString>100</valueString>
-        <dataType>STRING</dataType>
-        <isOtherwise>false</isOtherwise>
-      </value>
+      <value reference="../../../actionCols/set-field-col52/typedDefaultValue"/>
     </list>
   </data>
 </decision-table52>

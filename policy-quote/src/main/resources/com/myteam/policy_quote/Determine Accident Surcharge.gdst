@@ -17,7 +17,7 @@
         <dataType>BOOLEAN</dataType>
         <isOtherwise>false</isOtherwise>
       </typedDefaultValue>
-      <hideColumn>true</hideColumn>
+      <hideColumn>false</hideColumn>
       <width>100</width>
       <attribute>no-loop</attribute>
       <reverseOrder>false</reverseOrder>
@@ -90,6 +90,23 @@
           <valueList>0</valueList>
           <parameters/>
           <binding>price</binding>
+        </condition-column52>
+        <condition-column52>
+          <typedDefaultValue>
+            <valueNumeric class="int">0</valueNumeric>
+            <valueString></valueString>
+            <dataType>NUMERIC_INTEGER</dataType>
+            <isOtherwise>false</isOtherwise>
+          </typedDefaultValue>
+          <hideColumn>false</hideColumn>
+          <width>100</width>
+          <header>Surcharge Initialized</header>
+          <constraintValueType>1</constraintValueType>
+          <factField>priceSurcharge</factField>
+          <fieldType>Integer</fieldType>
+          <operator>&gt;=</operator>
+          <parameters/>
+          <binding></binding>
         </condition-column52>
       </conditions>
       <window>
@@ -185,6 +202,12 @@
       <value>
         <valueString>0</valueString>
         <dataType>STRING</dataType>
+        <isOtherwise>false</isOtherwise>
+      </value>
+      <value>
+        <valueNumeric class="int">0</valueNumeric>
+        <valueString></valueString>
+        <dataType>NUMERIC_INTEGER</dataType>
         <isOtherwise>false</isOtherwise>
       </value>
       <value>

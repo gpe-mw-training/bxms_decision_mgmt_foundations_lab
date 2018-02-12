@@ -39,11 +39,6 @@
           <nature>4</nature>
         </field-data>
         <field-data>
-          <name>priceSurcharge</name>
-          <value>0</value>
-          <nature>4</nature>
-        </field-data>
-        <field-data>
           <name>priceDiscount</name>
           <value>0</value>
           <nature>4</nature>
@@ -53,7 +48,7 @@
       <isModify>false</isModify>
     </fact-data>
     <execution-trace>
-      <executionTimeResult>21</executionTimeResult>
+      <executionTimeResult>20</executionTimeResult>
       <numberOfRulesFired>4</numberOfRulesFired>
     </execution-trace>
     <expect-fact>
@@ -61,7 +56,7 @@
         <expect-field>
           <fieldName>price</fieldName>
           <expected>900</expected>
-          <actualResult>900</actualResult>
+          <actualResult>700</actualResult>
           <successResult>true</successResult>
           <explanation>[Policy] field [price] was [900].</explanation>
           <operator>==</operator>
@@ -71,8 +66,15 @@
       <name>Policy</name>
       <anonymous>true</anonymous>
     </expect-fact>
+    <expect-rule>
+      <ruleName>Row 1 Determine Accident Surcharge</ruleName>
+      <explanation>Rule [Row 1 Determine Accident Surcharge] was activated 1 times.</explanation>
+      <expectedFire>true</expectedFire>
+      <successResult>true</successResult>
+      <actualResult>1</actualResult>
+    </expect-rule>
   </fixtures>
-  <lastRunResult>2018-02-12 14:15:33.462 UTC</lastRunResult>
+  <lastRunResult>2018-02-12 16:20:45.605 UTC</lastRunResult>
   <rules/>
   <inclusive>false</inclusive>
   <packageName>com.myteam.policy_quote</packageName>

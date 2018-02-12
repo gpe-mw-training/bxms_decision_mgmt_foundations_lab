@@ -17,6 +17,46 @@ metadata:
     version: 1.4.0
   name: rhdm7-full-ng
 objects:
+# dtorresf: Adding the service account and secrets to the template.
+# I like having a more centralized approach for all the required assets to
+# instantiate the environment, instead of having to break into different
+# execution steps.
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: decisioncentral-service-account
+    labels:
+      application: "${APPLICATION_NAME}"
+  secrets:
+  - name: decisioncentral-app-secret
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    annotations:
+      description: Default secret file with name 'jboss' and password 'mykeystorepass'
+    name: decisioncentral-app-secret
+    labels:
+      application: "${APPLICATION_NAME}"
+  data:
+    keystore.jks: "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"
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: kieserver-service-account
+    labels:
+      application: "${APPLICATION_NAME}"
+  secrets:
+  - name: kieserver-app-secret
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    annotations:
+      description: Default secret file with name 'jboss' and password 'mykeystorepass'
+    name: kieserver-app-secret
+    labels:
+      application: "${APPLICATION_NAME}"
+  data:
+    keystore.jks: "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"
 - kind: Service
   apiVersion: v1
   spec:
@@ -77,16 +117,19 @@ objects:
   kind: Service
   metadata:
     annotations:
-      description: The nodejs web server's http port for the mortgages demo.
+      description: The nodejs web server's http port for the angular application demo.
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-ng-mortgages
+# dtorresf: Now the angular2 application does not only is integrated with the
+# mortgages kie container, but also with the other kie containers:
+# customer-greeting, mortgages and policy-quote
+    name: ${APPLICATION_NAME}-ng-dmf
   spec:
     ports:
     - port: 8080
       targetPort: 8080
     selector:
-      deploymentConfig: ${APPLICATION_NAME}-ng-mortgages
+      deploymentConfig: ${APPLICATION_NAME}-ng-dmf
 - kind: Route
   apiVersion: v1
   id: "${APPLICATION_NAME}-rhdmcentr-http"
@@ -144,33 +187,31 @@ objects:
     tls:
       termination: passthrough
 - apiVersion: v1
-  id: ${APPLICATION_NAME}-ng-mortgages-http
+  id: ${APPLICATION_NAME}-ng-dmf-http
   kind: Route
   metadata:
     annotations:
       description: Route for nodejs mortgages http service.
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-ng-mortgages
+    name: ${APPLICATION_NAME}-ng-dmf
   spec:
     host: ${DECISION_CENTRAL_HOSTNAME_HTTP}
     to:
-      name: ${APPLICATION_NAME}-ng-mortgages
+      name: ${APPLICATION_NAME}-ng-dmf
 - apiVersion: v1
   kind: BuildConfig
   metadata:
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-ng-mortgages
+    name: ${APPLICATION_NAME}-ng-dmf
   spec:
-    paused: true
+    nodeSelector: null
     output:
       to:
         kind: ImageStreamTag
-        name: ng-mortgages:latest
+        name: ng-dmf:latest
     postCommit: {}
-
-# JA Bride:  Bumping up limit and request so tht node app builds in a timely manner without timing out
     resources:
       limits:
         cpu: "1"
@@ -178,28 +219,29 @@ objects:
       requests:
         cpu: "1"
         memory: 1Gi
-
     runPolicy: Serial
     source:
       git:
         ref: master
-        type: Git
-        uri: https://github.com/gpe-mw-training/bxms_decision_mgmt_ngmortgages.git
+# dtorresf: new git repository with templated angular2 application
+        uri: 'https://github.com/gpe-mw-training/gpte-ng-dmf.git'
+      type: Git
     strategy:
       sourceStrategy:
         from:
-          kind: DockerImage
-          name: registry.access.redhat.com/rhscl/nodejs-6-rhel7
-        type: Source
+# dtorresf: Using the available ImageStreamTag from the openshift registry
+          kind: ImageStreamTag
+          name: 'nodejs:latest'
+          namespace: openshift
+      type: Source
     triggers:
-    - type: ImageChange
-    - type: ConfigChange
+      - type: ImageChange
 - apiVersion: v1
   kind: ImageStream
   metadata:
     labels:
       application: ${APPLICATION_NAME}
-    name: ng-mortgages
+    name: ng-dmf
   spec:
     lookupPolicy:
       local: false
@@ -222,7 +264,6 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-rhdmcentr
   spec:
-    paused: true
     replicas: 1
     selector:
       deploymentConfig: ${APPLICATION_NAME}-rhdmcentr
@@ -341,7 +382,6 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-custom-execserv
   spec:
-    paused: true
     output:
       to:
         kind: ImageStreamTag
@@ -376,7 +416,62 @@ objects:
     triggers:
     - type: ImageChange
     - type: ConfigChange
+# dtorresf: Having the ConfigMap in the same template to reduce instantiation steps
+- apiVersion: v1
+  kind: ConfigMap
+  data:
+    undertow-cors.cli: >
+      batch
 
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Origin:add(header-name="Access-Control-Allow-Origin",
+      header-value="*")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Origin/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Methods:add(header-name="Access-Control-Allow-Methods",
+      header-value="GET, POST, OPTIONS, PUT, DELETE")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Methods/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Headers:add(header-name="Access-Control-Allow-Headers",
+      header-value="accept, authorization,  content-type, x-requested-with")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Headers/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Credentials:add(header-name="Access-Control-Allow-Credentials",
+      header-value="true")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Credentials/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Max-Age:add(header-name="Access-Control-Max-Age",
+      header-value="2")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Max-Age/:add()
+
+      run-batch
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: undertow-cors
+# dtorresf: This configmap enables configuration for the angular2 application
+# It is a typescript file that is inserted in the execution context of the
+# nodejs application, defining global variables that can be used accross the
+# angular2 execution.
+- apiVersion: v1
+  kind: ConfigMap
+  data:
+    environment.prod.ts: >
+      export const environment = {
+        production: true,
+        dmApiUrl: 'http://${APPLICATION_NAME}-kieserver-${PROJECT}.${CLUSTER}/',
+        dmUserName: '${KIE_ADMIN_USER}',
+        dmCredentials: '${KIE_ADMIN_PWD}',
+      };
+
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ng-environment
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -384,7 +479,6 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-kieserver
   spec:
-    paused: true
     replicas: 1
     selector:
       deploymentConfig: ${APPLICATION_NAME}-kieserver
@@ -449,8 +543,6 @@ objects:
               - /bin/bash
               - -c
               - /opt/eap/bin/livenessProbe.sh
-
-# JA Bride: Bumping up resources
           resources:
             limits:
               cpu: "1"
@@ -488,12 +580,9 @@ objects:
         - name: kieserver-keystore-volume
           secret:
             secretName: ${KIE_SERVER_HTTPS_SECRET}
-
-# JA Bride: Create a volume with the CLI needed to configure undertow for CORS
         - configMap:
             name: undertow-cors
           name: cors-volume
-
     triggers:
     - imageChangeParams:
         automatic: true
@@ -521,47 +610,69 @@ objects:
   metadata:
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-ng-mortgages
+    name: ${APPLICATION_NAME}-ng-dmf
   spec:
-    paused: true
     replicas: 1
     selector:
-      deploymentConfig: ${APPLICATION_NAME}-ng-mortgages
+      deploymentConfig: ${APPLICATION_NAME}-ng-dmf
     strategy:
       type: Recreate
     template:
       metadata:
         labels:
           application: ${APPLICATION_NAME}
-          deploymentConfig: ${APPLICATION_NAME}-ng-mortgages
-        name: ${APPLICATION_NAME}-ng-mortgages
+          deploymentConfig: ${APPLICATION_NAME}-ng-dmf
+        name: ${APPLICATION_NAME}-ng-dmf
       spec:
         containers:
-        - image: ng-mortgages:latest
+        - image: ng-dmf:latest
           imagePullPolicy: Always
           livenessProbe:
-            initialDelaySeconds: 15
+            failureThreshold: 10
+            initialDelaySeconds: 50
+            periodSeconds: 10
             tcpSocket:
               port: 8080
             timeoutSeconds: 1
-          name: ${APPLICATION_NAME}-ng-mortgages
+          name: ${APPLICATION_NAME}-ng-dmf
           ports:
           - containerPort: 8080
             name: http
             protocol: TCP
           readinessProbe:
-            initialDelaySeconds: 15
+            initialDelaySeconds: 50
+            failureThreshold: 30
+            periodSeconds: 10
             tcpSocket:
               port: 8080
             timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 256Mi
+# dtorresf: mapping the configmap into the /data volume mount enables the
+# environment configuration for the angular2 nodejs application
+# note the coincidence with:
+# https://github.com/gpe-mw-training/gpte-ng-dmf/blob/master/.angular-cli.json#L50
+          volumeMounts:
+          - mountPath: /data
+            name: environment-volume
+            readOnly: true
+        volumes:
+        - configMap:
+            name: ng-environment
+          name: environment-volume
     triggers:
     - imageChangeParams:
         automatic: true
         containerNames:
-        - ${APPLICATION_NAME}-ng-mortgages
+        - ${APPLICATION_NAME}-ng-dmf
         from:
           kind: ImageStreamTag
-          name: ng-mortgages:latest
+          name: ng-dmf:latest
       type: ImageChange
     - type: ConfigChange
 parameters:
@@ -720,4 +831,13 @@ parameters:
   description: Size of the persistent storage for Decision Central's runtime data.
   name: DECISION_CENTRAL_VOLUME_CAPACITY
   value: 512Mi
+  required: true
+# dtorresf: These parameters enable the setup of project and cluster properties for the angular2
+- displayName: Project name
+  name: PROJECT
+  required: true
+  value: dm-dtf
+- displayName: Cluster name
+  name: CLUSTER
+  value: apps.dev37.openshift.opentlc.com
   required: true

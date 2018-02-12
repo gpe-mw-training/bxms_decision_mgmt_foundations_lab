@@ -53,7 +53,7 @@
       <isModify>false</isModify>
     </fact-data>
     <execution-trace>
-      <executionTimeResult>18</executionTimeResult>
+      <executionTimeResult>34</executionTimeResult>
       <numberOfRulesFired>2</numberOfRulesFired>
     </execution-trace>
     <expect-fact>
@@ -71,7 +71,7 @@
       <anonymous>true</anonymous>
     </expect-fact>
   </fixtures>
-  <lastRunResult>2018-01-24 19:30:11.317 UTC</lastRunResult>
+  <lastRunResult>2018-02-12 13:38:14.684 UTC</lastRunResult>
   <rules/>
   <inclusive>false</inclusive>
   <packageName>com.myteam.policy_quote</packageName>

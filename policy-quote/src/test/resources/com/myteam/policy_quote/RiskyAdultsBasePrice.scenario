@@ -52,12 +52,17 @@
       <name>p</name>
       <isModify>false</isModify>
     </fact-data>
-    <execution-trace/>
+    <execution-trace>
+      <executionTimeResult>43</executionTimeResult>
+      <numberOfRulesFired>2</numberOfRulesFired>
+    </execution-trace>
     <expect-fact>
       <fieldValues>
         <expect-field>
           <fieldName>price</fieldName>
           <expected>300</expected>
+          <successResult>true</successResult>
+          <explanation>[Policy] field [price] was [300].</explanation>
           <operator>==</operator>
           <nature>1</nature>
         </expect-field>
@@ -65,7 +70,16 @@
       <name>Policy</name>
       <anonymous>true</anonymous>
     </expect-fact>
+    <expect-rule>
+      <ruleName>Row 1 Apply Price Modifiers</ruleName>
+      <expectedFire>true</expectedFire>
+    </expect-rule>
+    <expect-rule>
+      <ruleName>Row 4 Determine Base Price</ruleName>
+      <expectedFire>true</expectedFire>
+    </expect-rule>
   </fixtures>
+  <lastRunResult>2018-02-12 15:23:09.650 UTC</lastRunResult>
   <rules/>
   <inclusive>false</inclusive>
   <packageName>com.myteam.policy_quote</packageName>

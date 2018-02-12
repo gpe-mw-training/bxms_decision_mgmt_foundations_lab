@@ -3,9 +3,9 @@
     <repository>
       <include>true</include>
       <metadata>
-        <id>central</id>
-        <url>https://repo1.maven.org/maven2</url>
-        <source>SETTINGS</source>
+        <id>guvnor-m2-repo</id>
+        <url>http://gpte-buscentr-dtf-bpms.apps.dev37.openshift.opentlc.com/maven2/</url>
+        <source>PROJECT</source>
       </metadata>
     </repository>
     <repository>
@@ -19,9 +19,9 @@
     <repository>
       <include>true</include>
       <metadata>
-        <id>guvnor-m2-repo</id>
-        <url>http://gpte-buscentr-dtf-bpms.apps.dev37.openshift.opentlc.com/maven2/</url>
-        <source>PROJECT</source>
+        <id>central</id>
+        <url>https://repo1.maven.org/maven2</url>
+        <source>SETTINGS</source>
       </metadata>
     </repository>
   </repositories>

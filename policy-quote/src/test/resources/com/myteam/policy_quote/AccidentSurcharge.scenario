@@ -53,15 +53,15 @@
       <isModify>false</isModify>
     </fact-data>
     <execution-trace>
-      <executionTimeResult>20</executionTimeResult>
-      <numberOfRulesFired>3</numberOfRulesFired>
+      <executionTimeResult>21</executionTimeResult>
+      <numberOfRulesFired>4</numberOfRulesFired>
     </execution-trace>
     <expect-fact>
       <fieldValues>
         <expect-field>
           <fieldName>price</fieldName>
           <expected>900</expected>
-          <actualResult>700</actualResult>
+          <actualResult>900</actualResult>
           <successResult>true</successResult>
           <explanation>[Policy] field [price] was [900].</explanation>
           <operator>==</operator>
@@ -72,7 +72,7 @@
       <anonymous>true</anonymous>
     </expect-fact>
   </fixtures>
-  <lastRunResult>2018-01-24 19:14:50.2 UTC</lastRunResult>
+  <lastRunResult>2018-02-12 14:15:33.462 UTC</lastRunResult>
   <rules/>
   <inclusive>false</inclusive>
   <packageName>com.myteam.policy_quote</packageName>

@@ -2,28 +2,28 @@
   <imports>
     <imports>
       <import>
-        <type>java.lang.Number</type>
-      </import>
-      <import>
         <type>java.lang.Boolean</type>
-      </import>
-      <import>
-        <type>java.lang.String</type>
-      </import>
-      <import>
-        <type>java.lang.Integer</type>
       </import>
       <import>
         <type>java.lang.Double</type>
       </import>
       <import>
-        <type>java.util.List</type>
+        <type>java.lang.Integer</type>
+      </import>
+      <import>
+        <type>java.lang.Number</type>
+      </import>
+      <import>
+        <type>java.lang.String</type>
+      </import>
+      <import>
+        <type>java.util.ArrayList</type>
       </import>
       <import>
         <type>java.util.Collection</type>
       </import>
       <import>
-        <type>java.util.ArrayList</type>
+        <type>java.util.List</type>
       </import>
     </imports>
   </imports>

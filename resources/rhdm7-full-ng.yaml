@@ -378,7 +378,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: rhdm70-decisioncentral-openshift:1.0
-          namespace: ${IMAGE_STREAM_NAMESPACE}
+          namespace: ${RHT_IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -421,7 +421,7 @@ objects:
         from:
           kind: ImageStreamTag
           name: rhdm70-kieserver-openshift:1.0
-          namespace: ${IMAGE_STREAM_NAMESPACE}
+          namespace: ${RHT_IMAGE_STREAM_NAMESPACE}
         type: Source
     triggers:
     - type: ImageChange
@@ -818,12 +818,17 @@ parameters:
   name: KIE_SERVER_HTTPS_PASSWORD
   value: mykeystorepass
   required: false
-- displayName: ImageStream Namespace
+- displayName: RHT ImageStream Namespace
   description: Namespace in which the ImageStreams for Red Hat Middleware images are
     installed. These ImageStreams are normally installed in the openshift namespace.
     You should only need to modify this if you've installed the ImageStreams in a
     different namespace/project.
-  name: IMAGE_STREAM_NAMESPACE
+  name: RHT_IMAGE_STREAM_NAMESPACE
+  value: openshift
+  required: true
+- displayName: GPTE ImageStream Namespace
+  description: Namespace in which the ImageStreams for RHT GPTE images are installed.
+  name: GPTE_IMAGE_STREAM_NAMESPACE
   value: openshift
   required: true
 - displayName: Maven repository URL

@@ -213,9 +213,13 @@ objects:
         name: ng-dmf:latest
     postCommit: {}
     resources:
+
+# JA Bride / dtorresf: bumping to 2 cpu and 2Gi
+# The new version of this node app has more javascript components and pre-evaluations.
+# the new application has a menu for the demos and centralizes the demos for our course.
       limits:
-        cpu: "1"
-        memory: 1Gi
+        cpu: "2"
+        memory: 2Gi
       requests:
         cpu: "1"
         memory: 1Gi

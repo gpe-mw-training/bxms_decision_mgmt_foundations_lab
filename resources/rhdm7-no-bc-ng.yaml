@@ -1,0 +1,757 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: rhdm7-no-bc-ng
+  xpaas: 1.4.0
+message: A new persistent Decision Manager applications have been created in your project.
+  The username/password for accessing the KIE Server / Decision Central interface is ${KIE_ADMIN_USER}/${KIE_ADMIN_PWD}.
+  Please be sure to create the "decisioncentral-service-account" and "kieserver-service-account" service accounts
+  and the secrets named "${DECISION_CENTRAL_HTTPS_SECRET}" and "${KIE_SERVER_HTTPS_SECRET}" containing the
+  ${DECISION_CENTRAL_HTTPS_KEYSTORE} and ${KIE_SERVER_HTTPS_KEYSTORE}files used for serving secure content.
+  NOTE: This template does not define any BCs.  Instead, the DCs in this template have a dependency on builds that are
+  kicked off and pushed to the openshift namespace prior to this template being invoked.
+metadata:
+  annotations:
+    description: Application template for Red Hat JBoss Decision Management 7.0.
+    iconClass: icon-jboss
+    openshift.io/display-name: Red Hat Decision Manager 7.0 applications (Persistent with https)
+    tags: rhdm,jboss,xpaas
+    version: 1.4.0
+  name: rhdm7-full-ng
+objects:
+# dtorresf: Adding the service account and secrets to the template.
+# I like having a more centralized approach for all the required assets to
+# instantiate the environment, instead of having to break into different
+# execution steps.
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: decisioncentral-service-account
+    labels:
+      application: "${APPLICATION_NAME}"
+  secrets:
+  - name: decisioncentral-app-secret
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    annotations:
+      description: Default secret file with name 'jboss' and password 'mykeystorepass'
+    name: decisioncentral-app-secret
+    labels:
+      application: "${APPLICATION_NAME}"
+  data:
+    keystore.jks: "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"
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: kieserver-service-account
+    labels:
+      application: "${APPLICATION_NAME}"
+  secrets:
+  - name: kieserver-app-secret
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    annotations:
+      description: Default secret file with name 'jboss' and password 'mykeystorepass'
+    name: kieserver-app-secret
+    labels:
+      application: "${APPLICATION_NAME}"
+  data:
+    keystore.jks: "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"
+- kind: Service
+  apiVersion: v1
+  spec:
+    ports:
+    - port: 8080
+      targetPort: 8080
+    selector:
+      deploymentConfig: "${APPLICATION_NAME}-rhdmcentr"
+  metadata:
+    name: "${APPLICATION_NAME}-rhdmcentr"
+    labels:
+      application: "${APPLICATION_NAME}"
+    annotations:
+      description: The Decision Central web server's http port.
+- kind: Service
+  apiVersion: v1
+  spec:
+    ports:
+    - port: 8443
+      targetPort: 8443
+    selector:
+      deploymentConfig: "${APPLICATION_NAME}-rhdmcentr"
+  metadata:
+    name: secure-${APPLICATION_NAME}-rhdmcentr
+    labels:
+      application: "${APPLICATION_NAME}"
+    annotations:
+      description: The Decision Central web server's https port.
+- kind: Service
+  apiVersion: v1
+  spec:
+    ports:
+    - port: 8080
+      targetPort: 8080
+    selector:
+      deploymentConfig: "${APPLICATION_NAME}-kieserver"
+  metadata:
+    name: "${APPLICATION_NAME}-kieserver"
+    labels:
+      application: "${APPLICATION_NAME}"
+    annotations:
+      description: The KIE server web server's http port.
+- kind: Service
+  apiVersion: v1
+  spec:
+    ports:
+    - port: 8443
+      targetPort: 8443
+    selector:
+      deploymentConfig: "${APPLICATION_NAME}-kieserver"
+  metadata:
+    name: secure-${APPLICATION_NAME}-kieserver
+    labels:
+      application: "${APPLICATION_NAME}"
+    annotations:
+      description: The KIE server web server's https port.
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: The nodejs web server's http port for the angular application demo.
+    labels:
+      application: ${APPLICATION_NAME}
+# dtorresf: Now the angular2 application does not only is integrated with the
+# mortgages kie container, but also with the other kie containers:
+# customer-greeting, mortgages and policy-quote
+    name: ${APPLICATION_NAME}-ng-dmf
+  spec:
+    ports:
+    - port: 8080
+      targetPort: 8080
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-ng-dmf
+- kind: Route
+  apiVersion: v1
+  id: "${APPLICATION_NAME}-rhdmcentr-http"
+  metadata:
+    name: "${APPLICATION_NAME}-rhdmcentr"
+    labels:
+      application: "${APPLICATION_NAME}"
+    annotations:
+      description: Route for Decision Central's http service.
+  spec:
+    host: "${DECISION_CENTRAL_HOSTNAME_HTTP}"
+    to:
+      name: "${APPLICATION_NAME}-rhdmcentr"
+- kind: Route
+  apiVersion: v1
+  id: "${APPLICATION_NAME}-rhdmcentr-https"
+  metadata:
+    name: secure-${APPLICATION_NAME}-rhdmcentr
+    labels:
+      application: "${APPLICATION_NAME}"
+    annotations:
+      description: Route for Decision Central's https service.
+  spec:
+    host: "${DECISION_CENTRAL_HOSTNAME_HTTPS}"
+    to:
+      name: secure-${APPLICATION_NAME}-rhdmcentr
+    tls:
+      termination: passthrough
+- kind: Route
+  apiVersion: v1
+  id: "${APPLICATION_NAME}-kieserver-http"
+  metadata:
+    name: "${APPLICATION_NAME}-kieserver"
+    labels:
+      application: "${APPLICATION_NAME}"
+    annotations:
+      description: Route for KIE server's http service.
+  spec:
+    host: "${EXECUTION_SERVER_HOSTNAME_HTTP}"
+    to:
+      name: "${APPLICATION_NAME}-kieserver"
+- kind: Route
+  apiVersion: v1
+  id: "${APPLICATION_NAME}-kieserver-https"
+  metadata:
+    name: secure-${APPLICATION_NAME}-kieserver
+    labels:
+      application: "${APPLICATION_NAME}"
+    annotations:
+      description: Route for KIE server's https service.
+  spec:
+    host: "${EXECUTION_SERVER_HOSTNAME_HTTPS}"
+    to:
+      name: secure-${APPLICATION_NAME}-kieserver
+    tls:
+      termination: passthrough
+- apiVersion: v1
+  id: ${APPLICATION_NAME}-ng-dmf-http
+  kind: Route
+  metadata:
+    annotations:
+      description: Route for nodejs mortgages http service.
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-ng-dmf
+  spec:
+    host: ${DECISION_CENTRAL_HOSTNAME_HTTP}
+    to:
+      name: ${APPLICATION_NAME}-ng-dmf
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-rhdmcentr
+  spec:
+    # JA Bride:  setting all BCs and DCs to paused.  Will then start each one via ansible
+    paused: true
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-rhdmcentr
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: ${APPLICATION_NAME}
+          deploymentConfig: ${APPLICATION_NAME}-rhdmcentr
+        name: ${APPLICATION_NAME}-rhdmcentr
+      spec:
+        containers:
+        - env:
+          - name: JAVA_MAX_MEM_RATIO
+            value: "80"
+          - name: JAVA_INITIAL_MEM_RATIO
+            value: "0"
+          - name: GC_MAX_METASPACE_SIZE
+            value: "500"
+          - name: KIE_ADMIN_PWD
+            value: "${KIE_ADMIN_PWD}"
+          - name: KIE_ADMIN_USER
+            value: "${KIE_ADMIN_USER}"
+          - name: KIE_MBEANS
+            value: "${KIE_MBEANS}"
+          - name: KIE_SERVER_CONTROLLER_PWD
+            value: "${KIE_SERVER_CONTROLLER_PWD}"
+          - name: KIE_SERVER_CONTROLLER_USER
+            value: "${KIE_SERVER_CONTROLLER_USER}"
+          - name: KIE_SERVER_PWD
+            value: "${KIE_SERVER_PWD}"
+          - name: KIE_SERVER_USER
+            value: "${KIE_SERVER_USER}"
+          - name: HTTPS_KEYSTORE_DIR
+            value: "/etc/decisioncentral-secret-volume"
+          - name: HTTPS_KEYSTORE
+            value: "${DECISION_CENTRAL_HTTPS_KEYSTORE}"
+          - name: HTTPS_NAME
+            value: "${DECISION_CENTRAL_HTTPS_NAME}"
+          - name: HTTPS_PASSWORD
+            value: "${DECISION_CENTRAL_HTTPS_PASSWORD}"
+          - name: ADMIN_USERNAME
+            value: "${ADMIN_USERNAME}"
+          - name: ADMIN_PASSWORD
+            value: "${ADMIN_PASSWORD}"
+          - name: PROBE_IMPL
+            value: probe.eap.jolokia.EapProbe
+          - name: PROBE_DISABLE_BOOT_ERRORS_CHECK
+            value: 'true'
+          image: rhdm70-decisioncentral-openshift:1.0
+          imagePullPolicy: Always
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/livenessProbe.sh
+
+# JA Bride: Bumping up resources
+          resources:
+            limits:
+              cpu: "1"
+              memory: 3Gi
+            requests:
+              cpu: "1"
+              memory: 2Gi
+
+          name: ${APPLICATION_NAME}-rhdmcentr
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8443
+            name: https
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/readinessProbe.sh
+          volumeMounts:
+          - mountPath: /etc/decisioncentral-secret-volume
+            name: decisioncentral-keystore-volume
+            readOnly: true
+        serviceAccountName: decisioncentral-service-account
+        terminationGracePeriodSeconds: 60
+        volumes:
+        - name: decisioncentral-keystore-volume
+          secret:
+            secretName: ${DECISION_CENTRAL_HTTPS_SECRET}
+        - name: "${APPLICATION_NAME}-rhdmcentr-pvol"
+          persistentVolumeClaim:
+            claimName: "${APPLICATION_NAME}-rhdmcentr-claim"
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}-rhdmcentr
+        from:
+          kind: ImageStreamTag
+          name: rhdm70-decisioncentral-openshift:1.0
+          namespace: ${RHT_IMAGE_STREAM_NAMESPACE}
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+
+# dtorresf: Having the ConfigMap in the same template to reduce instantiation steps
+- apiVersion: v1
+  kind: ConfigMap
+  data:
+    undertow-cors.cli: >
+      batch
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Origin:add(header-name="Access-Control-Allow-Origin",
+      header-value="*")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Origin/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Methods:add(header-name="Access-Control-Allow-Methods",
+      header-value="GET, POST, OPTIONS, PUT, DELETE")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Methods/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Headers:add(header-name="Access-Control-Allow-Headers",
+      header-value="accept, authorization,  content-type, x-requested-with")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Headers/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Allow-Credentials:add(header-name="Access-Control-Allow-Credentials",
+      header-value="true")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Allow-Credentials/:add()
+
+      /subsystem=undertow/configuration=filter/response-header=Access-Control-Max-Age:add(header-name="Access-Control-Max-Age",
+      header-value="2")
+
+      /subsystem=undertow/server=default-server/host=default-host/filter-ref=Access-Control-Max-Age/:add()
+
+      run-batch
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: undertow-cors
+# dtorresf: This configmap enables configuration for the angular2 application
+# It is a typescript file that is inserted in the execution context of the
+# nodejs application, defining global variables that can be used accross the
+# angular2 execution.
+- apiVersion: v1
+  kind: ConfigMap
+  data:
+    environment.prod.ts: >
+      export const environment = {
+        production: true,
+        dmApiUrl: 'http://${APPLICATION_NAME}-kieserver-${PROJECT}.${CLUSTER}/',
+        dmUserName: '${KIE_ADMIN_USER}',
+        dmCredentials: '${KIE_ADMIN_PWD}',
+      };
+
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ng-environment
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-kieserver
+  spec:
+    # JA Bride:  setting all BCs and DCs to paused.  Will then start each one via ansible
+    paused: true
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-kieserver
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: ${APPLICATION_NAME}
+          deploymentConfig: ${APPLICATION_NAME}-kieserver
+        name: ${APPLICATION_NAME}-kieserver
+      spec:
+        containers:
+        - env:
+          - name: DROOLS_SERVER_FILTER_CLASSES
+            value: "${DROOLS_SERVER_FILTER_CLASSES}"
+          - name: KIE_ADMIN_PWD
+            value: "${KIE_ADMIN_PWD}"
+          - name: KIE_ADMIN_USER
+            value: "${KIE_ADMIN_USER}"
+          - name: KIE_MBEANS
+            value: "${KIE_MBEANS}"
+          - name: KIE_SERVER_BYPASS_AUTH_USER
+            value: "${KIE_SERVER_BYPASS_AUTH_USER}"
+          - name: KIE_SERVER_CONTROLLER_PWD
+            value: "${KIE_SERVER_CONTROLLER_PWD}"
+          - name: KIE_SERVER_CONTROLLER_SERVICE
+            value: "${APPLICATION_NAME}-rhdmcentr"
+          - name: KIE_SERVER_CONTROLLER_USER
+            value: "${KIE_SERVER_CONTROLLER_USER}"
+          - name: KIE_SERVER_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: KIE_SERVER_PWD
+            value: "${KIE_SERVER_PWD}"
+          - name: KIE_SERVER_USER
+            value: "${KIE_SERVER_USER}"
+          - name: MAVEN_REPO_URL
+            value: "${MAVEN_REPO_URL}"
+          - name: MAVEN_REPO_SERVICE
+            value: "${APPLICATION_NAME}-rhdmcentr"
+          - name: MAVEN_REPO_PATH
+            value: "/maven2/"
+          - name: MAVEN_REPO_USERNAME
+            value: "${MAVEN_REPO_USERNAME}"
+          - name: MAVEN_REPO_PASSWORD
+            value: "${MAVEN_REPO_PASSWORD}"
+          - name: HTTPS_KEYSTORE_DIR
+            value: "/etc/kieserver-secret-volume"
+          - name: HTTPS_KEYSTORE
+            value: "${KIE_SERVER_HTTPS_KEYSTORE}"
+          - name: HTTPS_NAME
+            value: "${KIE_SERVER_HTTPS_NAME}"
+          - name: HTTPS_PASSWORD
+            value: "${KIE_SERVER_HTTPS_PASSWORD}"
+          image: custom-execserv:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/livenessProbe.sh
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 1Gi
+
+          name: ${APPLICATION_NAME}-execserv
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8443
+            name: https
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/readinessProbe.sh
+          volumeMounts:
+          - mountPath: /etc/kieserver-secret-volume
+            name: kieserver-keystore-volume
+            readOnly: true
+          - mountPath: /data
+            name: cors-volume
+        serviceAccountName: decisioncentral-service-account
+        terminationGracePeriodSeconds: 60
+        volumes:
+        - name: kieserver-keystore-volume
+          secret:
+            secretName: ${KIE_SERVER_HTTPS_SECRET}
+        - configMap:
+            name: undertow-cors
+          name: cors-volume
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}-kieserver
+        from:
+          kind: ImageStreamTag
+          name: custom-execserv:latest
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: "${APPLICATION_NAME}-rhdmcentr-claim"
+    labels:
+      application: ${APPLICATION_NAME}
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: "${DECISION_CENTRAL_VOLUME_CAPACITY}"
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-ng-dmf
+  spec:
+    # JA Bride:  setting all BCs and DCs to paused.  Will then start each one via ansible
+    paused: true
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}-ng-dmf
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: ${APPLICATION_NAME}
+          deploymentConfig: ${APPLICATION_NAME}-ng-dmf
+        name: ${APPLICATION_NAME}-ng-dmf
+      spec:
+        containers:
+        - image: ng-dmf:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 50
+            periodSeconds: 10
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 1
+          name: ${APPLICATION_NAME}-ng-dmf
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          readinessProbe:
+            initialDelaySeconds: 50
+            failureThreshold: 30
+            periodSeconds: 10
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2Gi
+            requests:
+              cpu: "1"
+              memory: 256Mi
+# dtorresf: mapping the configmap into the /data volume mount enables the
+# environment configuration for the angular2 nodejs application
+# note the coincidence with:
+# https://github.com/gpe-mw-training/gpte-ng-dmf/blob/master/.angular-cli.json#L50
+          volumeMounts:
+          - mountPath: /data
+            name: environment-volume
+            readOnly: true
+        volumes:
+        - configMap:
+            name: ng-environment
+          name: environment-volume
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}-ng-dmf
+        from:
+          kind: ImageStreamTag
+          name: ng-dmf:latest
+      type: ImageChange
+    - type: ConfigChange
+parameters:
+- displayName: Application Name
+  description: The name for the application.
+  name: APPLICATION_NAME
+  value: myapp
+  required: true
+- displayName: EAP Admin User
+  description: EAP administrator username
+  name: ADMIN_USERNAME
+  value: eapadmin
+  required: false
+- displayName: EAP Admin Password
+  description: EAP administrator password
+  name: ADMIN_PASSWORD
+  from: "[a-zA-Z]{6}[0-9]{1}!"
+  generate: expression
+  required: false
+- displayName: KIE Admin User
+  description: KIE administrator username
+  name: KIE_ADMIN_USER
+  value: adminUser
+  required: false
+- displayName: KIE Admin Password
+  description: KIE administrator password
+  name: KIE_ADMIN_PWD
+  from: "[a-zA-Z]{6}[0-9]{1}!"
+  generate: expression
+  required: false
+- displayName: KIE Server Controller User
+  description: KIE server controller username (Sets the org.kie.server.controller.user system property)
+  name: KIE_SERVER_CONTROLLER_USER
+  value: controllerUser
+  required: false
+- displayName: KIE Server Controller Password
+  description: KIE server controller password (Sets the org.kie.server.controller.pwd system property)
+  name: KIE_SERVER_CONTROLLER_PWD
+  from: "[a-zA-Z]{6}[0-9]{1}!"
+  generate: expression
+  required: false
+- displayName: KIE Server User
+  description: KIE execution server username (Sets the org.kie.server.user system property)
+  name: KIE_SERVER_USER
+  value: executionUser
+  required: false
+- displayName: KIE Server Password
+  description: KIE execution server password (Sets the org.kie.server.pwd system property)
+  name: KIE_SERVER_PWD
+  from: "[a-zA-Z]{6}[0-9]{1}!"
+  generate: expression
+  required: false
+- displayName: KIE Server Bypass Auth User
+  description: KIE execution server bypass auth user (Sets the org.kie.server.bypass.auth.user system property)
+  name: KIE_SERVER_BYPASS_AUTH_USER
+  value: 'false'
+  required: false
+- displayName: KIE MBeans
+  description: KIE execution server mbeans enabled/disabled (Sets the kie.mbeans and kie.scanner.mbeans system properties)
+  name: KIE_MBEANS
+  value: enabled
+  required: false
+- displayName: Drools Server Filter Classes
+  description: KIE execution server class filtering (Sets the org.drools.server.filter.classes system property)
+  name: DROOLS_SERVER_FILTER_CLASSES
+  value: 'true'
+  required: false
+- displayName: Decision Central Custom http Route Hostname
+  description: 'Custom hostname for http service route.  Leave blank for default hostname,
+    e.g.: <application-name>-rhdmcentr-<project>.<default-domain-suffix>'
+  name: DECISION_CENTRAL_HOSTNAME_HTTP
+  value: ''
+  required: false
+- displayName: Decision Central Custom https Route Hostname
+  description: 'Custom hostname for https service route.  Leave blank for default
+    hostname, e.g.: secure-<application-name>-rhdmcentr-<project>.<default-domain-suffix>'
+  name: DECISION_CENTRAL_HOSTNAME_HTTPS
+  value: ''
+  required: false
+- displayName: Execution Server Custom http Route Hostname
+  description: 'Custom hostname for http service route.  Leave blank for default hostname,
+    e.g.: <application-name>-kieserver-<project>.<default-domain-suffix>'
+  name: EXECUTION_SERVER_HOSTNAME_HTTP
+  value: ''
+  required: false
+- displayName: Execution Server Custom https Route Hostname
+  description: 'Custom hostname for https service route.  Leave blank for default
+    hostname, e.g.: secure-<application-name>-kieserver-<project>.<default-domain-suffix>'
+  name: EXECUTION_SERVER_HOSTNAME_HTTPS
+  value: ''
+  required: false
+- displayName: Decision Central Server Keystore Secret Name
+  description: The name of the secret containing the keystore file
+  name: DECISION_CENTRAL_HTTPS_SECRET
+  value: decisioncentral-app-secret
+  required: false
+- displayName: Decision Central Server Keystore Filename
+  description: The name of the keystore file within the secret
+  name: DECISION_CENTRAL_HTTPS_KEYSTORE
+  value: keystore.jks
+  required: false
+- displayName: Decision Central Server Certificate Name
+  description: The name associated with the server certificate
+  name: DECISION_CENTRAL_HTTPS_NAME
+  value: jboss
+  required: false
+- displayName: Decision Central Server Keystore Password
+  description: The password for the keystore and certificate
+  name: DECISION_CENTRAL_HTTPS_PASSWORD
+  value: mykeystorepass
+  required: false
+- displayName: KIE Server Keystore Secret Name
+  description: The name of the secret containing the keystore file
+  name: KIE_SERVER_HTTPS_SECRET
+  value: kieserver-app-secret
+  required: false
+- displayName: KIE Server Keystore Filename
+  description: The name of the keystore file within the secret
+  name: KIE_SERVER_HTTPS_KEYSTORE
+  value: keystore.jks
+  required: false
+- displayName: KIE Server Certificate Name
+  description: The name associated with the server certificate
+  name: KIE_SERVER_HTTPS_NAME
+  value: jboss
+  required: false
+- displayName: KIE Server Keystore Password
+  description: The password for the keystore and certificate
+  name: KIE_SERVER_HTTPS_PASSWORD
+  value: mykeystorepass
+  required: false
+- displayName: RHT ImageStream Namespace
+  description: Namespace in which the ImageStreams for Red Hat Middleware images are
+    installed. These ImageStreams are normally installed in the openshift namespace.
+    You should only need to modify this if you've installed the ImageStreams in a
+    different namespace/project.
+  name: RHT_IMAGE_STREAM_NAMESPACE
+  value: openshift
+  required: true
+- displayName: GPTE ImageStream Namespace
+  description: Namespace in which the ImageStreams for RHT GPTE images are installed.
+  name: GPTE_IMAGE_STREAM_NAMESPACE
+  value: openshift
+  required: true
+- displayName: Maven repository URL
+  description: Fully qualified URL to a Maven repository. If unspecified, will fall back to Decision Central service.
+  name: MAVEN_REPO_URL
+  required: false
+- displayName: Maven repository username
+  description: Username to access the Maven repository. If using Decision Central, will have to match KIE_ADMIN_USER.
+    Default is "adminUser".
+  name: MAVEN_REPO_USERNAME
+  value: adminUser
+  required: false
+- displayName: Maven repository password
+  description: Password to access the Maven repository. If using Decision Central, will have to match KIE_ADMIN_PWD.
+    No default specified.
+  name: MAVEN_REPO_PASSWORD
+  required: false
+- displayName: Decision Central Volume Capacity
+  description: Size of the persistent storage for Decision Central's runtime data.
+  name: DECISION_CENTRAL_VOLUME_CAPACITY
+  value: 512Mi
+  required: true
+# dtorresf: These parameters enable the setup of project and cluster properties for the angular2
+- displayName: Project name
+  name: PROJECT
+  required: true
+  value: dm-dtf
+- displayName: Cluster name
+  name: CLUSTER
+  value: apps.dev37.openshift.opentlc.com
+  required: true

@@ -14,6 +14,88 @@ The following enables an decision manager execution server whose undertow web se
 $ oc create -f resources/rhdm7-full-ng.yaml
 -----
 
+. Initialize OCP resources from the project template:
++
+-----
+$ oc new-app --name=dm-demo --template=rhdm7-full-ng \
+         -p RHT_IMAGE_STREAM_NAMESPACE=openshift \
+         -p KIE_ADMIN_PWD=test1234! \
+         -p MAVEN_REPO_PASSWORD=test1234! \
+         -p CLUSTER=apps.dev37.openshift.opentlc.com \
+         -p APPLICATION_NAME=gpte > /tmp/gpte-dm-demo.txt
+-----
+
+. Resume DCs that are initially paused by default:
++
+-----
+$ oc rollout resume dc/gpte-rhdmcentr
+$ oc rollout resume dc/gpte-kieserver
+$ oc rollout resume dc/gpte-ng-dmf
+------
+
+. User IDs / passwords
+.. *Business Central* : adminUser / admin
+.. *kie-server* : adminUser / admin
+.. *Mortgage Loan Decision Test* : 
+
+. Routes
+.. Kie Server documentation:
++
+-----
+$ echo -en "\n\nhttps://`oc get route secure-gpte-execserv --template "{{.spec.host}}"`:443/docs/\n\n"
+-----
+.. KIE Server status:
++
+-----
+$ echo -en "\n\nhttps://`oc get route secure-gpte-execserv --template "{{.spec.host}}"`:443/services/rest/server/\n\n"
+-----
+
+
+
+=== Additional Notes
+
+. (Optional) Delete all OCP resources associated with this project:
++
+-----
+$ oc delete all -l app=dm-demo
+$ oc delete sa/bpmsuite-service-account
+$ oc delete secret/bpmsuite-app-secret
+$ oc delete template/ng-mortgage-bpmsuite70-full-mysql
+-----
+
+. (Optional) Instantiate a container directly from bpms7 execserver image:
++
+-----
+$ oc new-app bpmsuite70-executionserver-openshift:1.0~https://github.com/gpe-mw-training/bxms_decision_mgmt_foundations_lab.git \
+--context-dir=exec-server \
+--name=exec-test
+-----
+
+. (Optional) Build BCs in OpenShift namespace
++
+-----
+$ oc process \
+    -p RHT_IMAGE_STREAM_NAMESPACE=openshift \
+    -p APPLICATION_NAME=gpte \
+    -f resources/rhdm7-bc.yaml \
+    | oc create -f - -n openshift --as=system:admin
+
+$ oc create -f resources/rhdm7-no-bc-ng.yaml
+
+$ oc new-app --name=dm-demo --template=rhdm7-no-bc-ng \
+         -p RHT_IMAGE_STREAM_NAMESPACE=openshift \
+         -p GPTE_IMAGE_STREAM_NAMESPACE=openshift \
+         -p KIE_ADMIN_PWD=test1234! \
+         -p MAVEN_REPO_PASSWORD=test1234! \
+         -p CLUSTER=apps.dev37.openshift.opentlc.com \
+         -p APPLICATION_NAME=gpte > /tmp/gpte-dm-demo.txt
+-----
+
+
+
+
+=== Deprecated
+
 . Create a keystore for execution server
 +
 -----
@@ -45,58 +127,3 @@ The project template mounts a volume from this configmap to the execution server
 $  oc create configmap undertow-cors --from-file=resources/undertow-cors.cli
 -----
 
-. Initialize OCP resources from the project template:
-+
------
-$ oc new-app --name=dm-demo --template=ng-mortgage-bpmsuite70-full-mysql \
-         -p IMAGE_STREAM_NAMESPACE=openshift \
-         -p HTTPS_PASSWORD=rhtgpte \
-         -p KIE_ADMIN_PWD=admin \
-         -p APPLICATION_NAME=gpte > /tmp/gpte-dm-demo.txt
------
-
-. Resume DCs that are initially paused by default:
-+
------
-$ oc rollout resume dc/gpte-mysql
-$ oc rollout resume dc/gpte-execserv
-$ oc rollout resume dc/gpte-buscentr
-$ oc rollout resume dc/gpte-ng-mortgages
-------
-
-. User IDs / passwords
-.. *Business Central* : adminUser / admin
-.. *kie-server* : adminUser / admin
-.. *Mortgage Loan Decision Test* : 
-
-. Routes
-.. Kie Server documentation:
-+
------
-$ echo -en "\n\nhttps://`oc get route secure-gpte-execserv --template "{{.spec.host}}"`:443/docs/\n\n"
------
-.. KIE Server status:
-+
------
-$ echo -en "\n\nhttps://`oc get route secure-gpte-execserv --template "{{.spec.host}}"`:443/services/rest/server/\n\n"
------
-
-
-=== Additional Notes
-
-. (Optional) Delete all OCP resources associated with this project:
-+
------
-$ oc delete all -l app=dm-demo
-$ oc delete sa/bpmsuite-service-account
-$ oc delete secret/bpmsuite-app-secret
-$ oc delete template/ng-mortgage-bpmsuite70-full-mysql
------
-
-. (Optional) Instantiate a container directly from bpms7 execserver image:
-+
------
-$ oc new-app bpmsuite70-executionserver-openshift:1.0~https://github.com/gpe-mw-training/bxms_decision_mgmt_foundations_lab.git \
---context-dir=exec-server \
---name=exec-test
------

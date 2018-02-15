@@ -381,9 +381,9 @@ objects:
           namespace: ${RHT_IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - type: ConfigChange
-- apiVersion: v1
 
 # JA Bride: Defining a BC to layer custom run script on execserv image
+- apiVersion: v1
   kind: BuildConfig
   metadata:
     labels:

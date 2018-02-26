@@ -199,69 +199,7 @@ objects:
     host: ${DECISION_CENTRAL_HOSTNAME_HTTP}
     to:
       name: ${APPLICATION_NAME}-ng-dmf
-- apiVersion: v1
-  kind: BuildConfig
-  metadata:
-    labels:
-      application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-ng-dmf
-  spec:
-    # JA Bride:  setting all BCs and DCs to paused.  Will then start each one via ansible
-    paused: true
-    nodeSelector: null
-    output:
-      to:
-        kind: ImageStreamTag
-        name: ng-dmf:latest
-    postCommit: {}
-    resources:
 
-# JA Bride / dtorresf: bumping to 2 cpu and 2Gi
-# The new version of this node app has more javascript components and pre-evaluations.
-# the new application has a menu for the demos and centralizes the demos for our course.
-      limits:
-        cpu: "2"
-        memory: 2Gi
-      requests:
-        cpu: "1"
-        memory: 1Gi
-    runPolicy: Serial
-    source:
-      git:
-        ref: master
-# dtorresf: new git repository with templated angular2 application
-        uri: 'https://github.com/gpe-mw-training/gpte-ng-dmf.git'
-      type: Git
-    strategy:
-      sourceStrategy:
-        from:
-# dtorresf: Using the available ImageStreamTag from the openshift registry
-          kind: ImageStreamTag
-          name: 'nodejs:latest'
-          namespace: openshift
-      type: Source
-    triggers:
-      - type: ImageChange
-- apiVersion: v1
-  kind: ImageStream
-  metadata:
-    labels:
-      application: ${APPLICATION_NAME}
-    name: ng-dmf
-  spec:
-    lookupPolicy:
-      local: false
-
-# JA Bride:  imagestream for customized execserv created from BC resource defined in this template
-- apiVersion: v1
-  kind: ImageStream
-  metadata:
-    labels:
-      application: ${APPLICATION_NAME}
-    name: custom-execserv
-  spec:
-    lookupPolicy:
-      local: false
 
 - apiVersion: v1
   kind: DeploymentConfig
@@ -270,7 +208,7 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-rhdmcentr
   spec:
-    # JA Bride:  setting all BCs and DCs to paused.  Will then start each one via ansible
+    # JA Bride:  setting all DCs to paused.  Will then start each one via ansible
     paused: true
     replicas: 1
     selector:
@@ -382,20 +320,18 @@ objects:
       type: ImageChange
     - type: ConfigChange
 
-# JA Bride: Defining a BC to layer custom run script on execserv image
+# JA Bride: Defining a BC to layer custom run script on kieserver image
 - apiVersion: v1
   kind: BuildConfig
   metadata:
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-custom-execserv
+    name: ${APPLICATION_NAME}-custom-kieserver
   spec:
-    # JA Bride:  setting all BCs and DCs to paused.  Will then start each one via ansible
-    paused: true
     output:
       to:
         kind: ImageStreamTag
-        name: custom-execserv:latest
+        name: custom-kieserver:latest
     postCommit: {}
 
 # JA Bride:  Bumping up limit and request so tht node app builds in a timely manner without timing out
@@ -426,6 +362,18 @@ objects:
     triggers:
     - type: ImageChange
     - type: ConfigChange
+
+# JA Bride:  imagestream for customized kieserver created from BC resource defined in this template
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: custom-kieserver
+  spec:
+    lookupPolicy:
+      local: false
+
 # dtorresf: Having the ConfigMap in the same template to reduce instantiation steps
 - apiVersion: v1
   kind: ConfigMap
@@ -463,25 +411,7 @@ objects:
     labels:
       application: ${APPLICATION_NAME}
     name: undertow-cors
-# dtorresf: This configmap enables configuration for the angular2 application
-# It is a typescript file that is inserted in the execution context of the
-# nodejs application, defining global variables that can be used accross the
-# angular2 execution.
-- apiVersion: v1
-  kind: ConfigMap
-  data:
-    environment.prod.ts: >
-      export const environment = {
-        production: true,
-        dmApiUrl: 'http://${APPLICATION_NAME}-kieserver-${PROJECT}.${CLUSTER}/',
-        dmUserName: '${KIE_ADMIN_USER}',
-        dmCredentials: '${KIE_ADMIN_PWD}',
-      };
 
-  metadata:
-    labels:
-      application: ${APPLICATION_NAME}
-    name: ng-environment
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -489,7 +419,7 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-kieserver
   spec:
-    # JA Bride:  setting all BCs and DCs to paused.  Will then start each one via ansible
+    # JA Bride:  setting all DCs to paused.  Will then start each one via ansible
     paused: true
     replicas: 1
     selector:
@@ -547,7 +477,7 @@ objects:
             value: "${KIE_SERVER_HTTPS_NAME}"
           - name: HTTPS_PASSWORD
             value: "${KIE_SERVER_HTTPS_PASSWORD}"
-          image: custom-execserv:latest
+          image: custom-kieserver:latest
           imagePullPolicy: Always
           livenessProbe:
             exec:
@@ -563,7 +493,7 @@ objects:
               cpu: "1"
               memory: 1Gi
 
-          name: ${APPLICATION_NAME}-execserv
+          name: ${APPLICATION_NAME}-kieserver
           ports:
           - containerPort: 8778
             name: jolokia
@@ -602,7 +532,7 @@ objects:
         - ${APPLICATION_NAME}-kieserver
         from:
           kind: ImageStreamTag
-          name: custom-execserv:latest
+          name: custom-kieserver:latest
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -617,6 +547,79 @@ objects:
     resources:
       requests:
         storage: "${DECISION_CENTRAL_VOLUME_CAPACITY}"
+
+# dtorresf: This configmap enables configuration for the angular2 application
+# It is a typescript file that is inserted in the execution context of the
+# nodejs application, defining global variables that can be used accross the
+# angular2 execution.
+- apiVersion: v1
+  kind: ConfigMap
+  data:
+    environment.prod.ts: >
+      export const environment = {
+        production: true,
+        dmApiUrl: 'http://${APPLICATION_NAME}-kieserver-${PROJECT}.${CLUSTER}/',
+        dmUserName: '${KIE_ADMIN_USER}',
+        dmCredentials: '${KIE_ADMIN_PWD}',
+      };
+
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ng-environment
+
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}-ng-dmf
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ng-dmf:latest
+    postCommit: {}
+    resources:
+
+# JA Bride / dtorresf: bumping to 2 cpu and 2Gi
+# The new version of this node app has more javascript components and pre-evaluations.
+# the new application has a menu for the demos and centralizes the demos for our course.
+      limits:
+        cpu: "2"
+        memory: 2Gi
+      requests:
+        cpu: "1"
+        memory: 1Gi
+    runPolicy: Serial
+    source:
+      git:
+        ref: master
+# dtorresf: new git repository with templated angular2 application
+        uri: 'https://github.com/gpe-mw-training/gpte-ng-dmf.git'
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+# dtorresf: Using the available ImageStreamTag from the openshift registry
+          kind: ImageStreamTag
+          name: 'nodejs:latest'
+          namespace: openshift
+      type: Source
+    triggers:
+      - type: ImageChange
+
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      application: ${APPLICATION_NAME}
+    name: ng-dmf
+  spec:
+    lookupPolicy:
+      local: false
+
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -624,7 +627,7 @@ objects:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-ng-dmf
   spec:
-    # JA Bride:  setting all BCs and DCs to paused.  Will then start each one via ansible
+    # JA Bride:  setting all DCs to paused.  Will then start each one via ansible
     paused: true
     replicas: 1
     selector:

@@ -42,12 +42,12 @@ $ oc rollout resume dc/gpte-ng-dmf
 .. Kie Server documentation:
 +
 -----
-$ echo -en "\n\nhttps://`oc get route secure-gpte-execserv --template "{{.spec.host}}"`:443/docs/\n\n"
+$ echo -en "\n\nhttps://`oc get route secure-gpte-kieserver --template "{{.spec.host}}"`:443/docs/\n\n"
 -----
 .. KIE Server status:
 +
 -----
-$ echo -en "\n\nhttps://`oc get route secure-gpte-execserv --template "{{.spec.host}}"`:443/services/rest/server/\n\n"
+$ echo -en "\n\nhttps://`oc get route secure-gpte-kieserver --template "{{.spec.host}}"`:443/services/rest/server/\n\n"
 -----
 
 
@@ -63,7 +63,7 @@ $ oc delete secret/bpmsuite-app-secret
 $ oc delete template/ng-mortgage-bpmsuite70-full-mysql
 -----
 
-. (Optional) Instantiate a container directly from bpms7 execserver image:
+. (Optional) Instantiate a container directly from bpms7 kieserver image:
 +
 -----
 $ oc new-app bpmsuite70-executionserver-openshift:1.0~https://github.com/gpe-mw-training/bxms_decision_mgmt_foundations_lab.git \

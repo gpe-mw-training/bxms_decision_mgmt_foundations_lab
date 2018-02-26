@@ -69,20 +69,20 @@ objects:
 
 
 
-# JA Bride: Defining a BC to layer custom run script on execserv image
+# JA Bride: Defining a BC to layer custom run script on kieserver image
 - apiVersion: v1
   kind: BuildConfig
   metadata:
     labels:
       application: ${APPLICATION_NAME}
-    name: ${APPLICATION_NAME}-custom-execserv
+    name: ${APPLICATION_NAME}-custom-kieserver
   spec:
     nodeSelector: null
     postCommit: {}
     output:
       to:
         kind: ImageStreamTag
-        name: custom-execserv:latest
+        name: custom-kieserver:latest
 
 # JA Bride:  Bumping up limit and request so tht node app builds in a timely manner without timing out
     resources:
@@ -113,13 +113,13 @@ objects:
     triggers:
       - type: ImageChange
 
-# JA Bride:  imagestream for customized execserv created from BC resource defined in this template
+# JA Bride:  imagestream for customized kieserver created from BC resource defined in this template
 - apiVersion: v1
   kind: ImageStream
   metadata:
     labels:
       application: ${APPLICATION_NAME}
-    name: custom-execserv
+    name: custom-kieserver
   spec:
     lookupPolicy:
       local: false

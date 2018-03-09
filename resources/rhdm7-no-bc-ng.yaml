@@ -234,6 +234,7 @@ objects:
       spec:
         containers:
         - env:
+          # Can expect -Xmx of 2458MB based on 3Gi memory limit
           - name: JAVA_MAX_MEM_RATIO
             value: "80"
           - name: JAVA_INITIAL_MEM_RATIO
@@ -283,6 +284,7 @@ objects:
           resources:
             limits:
               cpu: "1"
+              # Utilized when determining -XmX
               memory: 3Gi
             requests:
               cpu: "1"

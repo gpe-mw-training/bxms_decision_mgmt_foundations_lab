@@ -223,7 +223,8 @@ objects:
     selector:
       deploymentConfig: ${APPLICATION_NAME}-rhdmcentr
     strategy:
-      type: Recreate
+      # https://github.com/redhat-gpe/bxms_decision_mgmt_foundations/issues/39
+      type: Rolling
     template:
       metadata:
         labels:
@@ -399,7 +400,8 @@ objects:
     selector:
       deploymentConfig: ${APPLICATION_NAME}-kieserver
     strategy:
-      type: Recreate
+      # https://github.com/redhat-gpe/bxms_decision_mgmt_foundations/issues/39
+      type: Rolling
     template:
       metadata:
         labels:
@@ -536,7 +538,8 @@ objects:
     selector:
       deploymentConfig: ${APPLICATION_NAME}-ng-dmf
     strategy:
-      type: Recreate
+      # https://github.com/redhat-gpe/bxms_decision_mgmt_foundations/issues/39
+      type: Rolling
     template:
       metadata:
         labels:

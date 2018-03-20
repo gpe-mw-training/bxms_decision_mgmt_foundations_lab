@@ -6,7 +6,7 @@
   remote_user: root
   connection: local
   tasks:
-      - debug: msg="new project = {{dm_project}}"
+      - debug: msg="new project = {{ocp_project}}"
 
   roles:
     - dm

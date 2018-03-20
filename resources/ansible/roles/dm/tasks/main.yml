@@ -1,7 +1,4 @@
 ---
-- name: define ocp_project
-  set_fact:
-    ocp_project: "bxms-dm-{{OCP_PROJECT_PREFIX}}"
 
 - name: "Create project for workload {{ocp_project}}"
   shell: "oc new-project {{ocp_project}}"

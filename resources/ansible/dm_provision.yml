@@ -1,0 +1,12 @@
+# Pre-reqs:
+#   1)  Install the following as root:    pip install jmespath
+#       - doing so allows for use of json_query task
+
+- hosts: cloud-dm
+  remote_user: root
+  connection: local
+  tasks:
+      - debug: msg="new project = {{dm_project}}"
+
+  roles:
+    - dm_provision 

@@ -1,0 +1,15 @@
+dm_template: https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/3scale-amp-2.1.yml
+
+dm_project: "{{OCP_PROJECT_PREFIX}}-3scale-ansible"
+dm_tenant_name: "{{OCP_PROJECT_PREFIX}}-3scale"
+dm_wildcard_domain: "{{ openshift_master_default_subdomain }}"
+dm_delay: 10
+dm_retries: 30
+
+kie_admin_pwd: test1234!
+maven_repo_pwd: test1234!
+
+vertx_prod_route: {routename: "vertx-prod-apicast-route", hostname: "vertx-prod-apicast-{{OCP_PROJECT_PREFIX}}.{{ dm_wildcard_domain }}" }
+
+API_RESPONSE_DIR: /tmp/amp_api_responses
+PROVISION_3SCALE_LOG_FILE: "{{ API_RESPONSE_DIR }}/refresh_3scale_resources.log"

@@ -1,0 +1,50 @@
+---
+- name: define ocp_project
+  set_fact:
+    ocp_project: "bxms-dm-{{OCP_PROJECT_PREFIX}}"
+
+- name: "Create project for workload {{ocp_project}}"
+  shell: "oc new-project {{ocp_project}}"
+
+- name: Give ocp_username access to ocp_project
+  shell: "oc policy add-role-to-user admin {{OCP_USERNAME}} -n {{ocp_project}}"
+
+- name: Initialize the project template
+  shell: "oc create -f https://raw.githubusercontent.com/gpe-mw-training/bxms_decision_mgmt_foundations_lab/master/resources/rhdm7-only.yaml -n {{ocp_project}}"
+
+- name: Prep local filesystem for temp files
+  file:
+    path: "/tmp/{{ocp_project}}"
+    state: directory
+
+- name: Initialize OCP resources from the project template using CLUSTER {{ ocp_apps_domain }}
+  shell: |
+      oc new-app --name=dm-demo -n {{ocp_project}} --template=rhdm7-full-ng \
+      -p RHT_IMAGE_STREAM_NAMESPACE=openshift \
+      -p KIE_ADMIN_PWD={{kie_admin_pwd}} \
+      -p MAVEN_REPO_PASSWORD={{maven_repo_pwd}} \
+      -p CLUSTER={{ocp_apps_domain}} \
+      -p PROJECT={{ocp_project}} \
+      -p APPLICATION_NAME=gpte > /tmp/{{ocp_project}}/gpte-dm-demo.txt
+
+- include: ./wait_for_build.yml
+  static: no
+  vars:
+    build_to_wait:
+      - gpte-custom-kieserver
+
+- name: resume gpte-rhdmcentr
+  shell: oc rollout resume dc/gpte-rhdmcentr -n {{ocp_project}}
+- include: ./wait_for_deploy.yml
+  static: no
+  vars:
+    pod_to_wait:
+      - gpte-rhdmcentr
+
+- name: resume gpte-kieserver
+  shell: oc rollout resume dc/gpte-kieserver -n {{ocp_project}}
+- include: ./wait_for_deploy.yml
+  static: no
+  vars:
+    pod_to_wait:
+      - gpte-kieserver

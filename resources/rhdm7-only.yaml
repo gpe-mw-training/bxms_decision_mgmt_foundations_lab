@@ -665,11 +665,6 @@ parameters:
   name: RHT_IMAGE_STREAM_NAMESPACE
   value: openshift
   required: true
-- displayName: GPTE ImageStream Namespace
-  description: Namespace in which the ImageStreams for RHT GPTE images are installed.
-  name: GPTE_IMAGE_STREAM_NAMESPACE
-  value: openshift
-  required: true
 - displayName: Maven repository URL
   description: Fully qualified URL to a Maven repository. If unspecified, will fall back to Decision Central service.
   name: MAVEN_REPO_URL
@@ -690,12 +685,9 @@ parameters:
   name: DECISION_CENTRAL_VOLUME_CAPACITY
   value: 512Mi
   required: true
+
 # dtorresf: These parameters enable the setup of project and cluster properties for the angular2
-- displayName: Project name
-  name: PROJECT
-  required: true
-  value: dm-dtf
-- displayName: Cluster name
-  name: CLUSTER
-  value: apps.dev37.openshift.opentlc.com
-  required: true
+#- displayName: Project name
+#  name: PROJECT
+#  required: true
+#  value: dm-dtf

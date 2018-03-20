@@ -9,4 +9,4 @@
       - debug: msg="new project = {{dm_project}}"
 
   roles:
-    - dm_provision 
+    - dm

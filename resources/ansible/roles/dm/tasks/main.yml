@@ -17,34 +17,32 @@
     path: "/tmp/{{ocp_project}}"
     state: directory
 
-- name: Initialize OCP resources from the project template using CLUSTER {{ ocp_apps_domain }}
+- name: Initialize OCP resources from the project template
   shell: |
-      oc new-app --name=dm-demo -n {{ocp_project}} --template=rhdm7-full-ng \
+      oc new-app --name=dm-demo -n {{ocp_project}} --template=rhdm7-only \
       -p RHT_IMAGE_STREAM_NAMESPACE=openshift \
       -p KIE_ADMIN_PWD={{kie_admin_pwd}} \
       -p MAVEN_REPO_PASSWORD={{maven_repo_pwd}} \
-      -p CLUSTER={{ocp_apps_domain}} \
-      -p PROJECT={{ocp_project}} \
-      -p APPLICATION_NAME=gpte > /tmp/{{ocp_project}}/gpte-dm-demo.txt
+      -p APPLICATION_NAME={{app_name}} > /tmp/{{ocp_project}}/rh-dm.txt
 
 - include: ./wait_for_build.yml
   static: no
   vars:
     build_to_wait:
-      - gpte-custom-kieserver
+      - "{{app_name}}-custom-kieserver"
 
-- name: resume gpte-rhdmcentr
-  shell: oc rollout resume dc/gpte-rhdmcentr -n {{ocp_project}}
+- name: resume {{app_name}}-rhdmcentr
+  shell: oc rollout resume dc/{{app_name}}-rhdmcentr -n {{ocp_project}}
 - include: ./wait_for_deploy.yml
   static: no
   vars:
     pod_to_wait:
-      - gpte-rhdmcentr
+      - "{{app_name}}-rhdmcentr"
 
 - name: resume gpte-kieserver
-  shell: oc rollout resume dc/gpte-kieserver -n {{ocp_project}}
+  shell: oc rollout resume dc/{{app_name}}-kieserver -n {{ocp_project}}
 - include: ./wait_for_deploy.yml
   static: no
   vars:
     pod_to_wait:
-      - gpte-kieserver
+      - "{{app_name}}-kieserver"

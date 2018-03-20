@@ -439,6 +439,11 @@ objects:
       spec:
         containers:
         - env:
+          # Can expect -Xmx of 1600MB based on 2Gi memory limit
+          - name: JAVA_MAX_MEM_RATIO
+            value: "80"
+          - name: JAVA_INITIAL_MEM_RATIO
+            value: "0"
           - name: DROOLS_SERVER_FILTER_CLASSES
             value: "${DROOLS_SERVER_FILTER_CLASSES}"
           - name: KIE_ADMIN_PWD

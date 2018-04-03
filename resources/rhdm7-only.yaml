@@ -685,9 +685,3 @@ parameters:
   name: DECISION_CENTRAL_VOLUME_CAPACITY
   value: 512Mi
   required: true
-
-# dtorresf: These parameters enable the setup of project and cluster properties for the angular2
-#- displayName: Project name
-#  name: PROJECT
-#  required: true
-#  value: dm-dtf

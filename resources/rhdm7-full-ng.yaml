@@ -302,6 +302,8 @@ objects:
           - mountPath: /etc/decisioncentral-secret-volume
             name: decisioncentral-keystore-volume
             readOnly: true
+          - name: "${APPLICATION_NAME}-rhdmcentr-pvol"
+            mountPath: "/opt/eap/standalone/data/bpmsuite"
         serviceAccountName: decisioncentral-service-account
         terminationGracePeriodSeconds: 60
         volumes:

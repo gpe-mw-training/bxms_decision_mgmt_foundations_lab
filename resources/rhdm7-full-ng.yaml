@@ -559,25 +559,7 @@ objects:
       requests:
         storage: "${DECISION_CENTRAL_VOLUME_CAPACITY}"
 
-# dtorresf: This configmap enables configuration for the angular2 application
-# It is a typescript file that is inserted in the execution context of the
-# nodejs application, defining global variables that can be used accross the
-# angular2 execution.
-- apiVersion: v1
-  kind: ConfigMap
-  data:
-    environment.prod.ts: >
-      export const environment = {
-        production: true,
-        dmApiUrl: 'http://${APPLICATION_NAME}-kieserver-${PROJECT}.${CLUSTER}/',
-        dmUserName: '${KIE_ADMIN_USER}',
-        dmCredentials: '${KIE_ADMIN_PWD}',
-      };
-
-  metadata:
-    labels:
-      application: ${APPLICATION_NAME}
-    name: ng-environment
+# dtorresf: configmap replaced by environment variables in BuildConfig
 
 - apiVersion: v1
   kind: BuildConfig
@@ -606,12 +588,25 @@ objects:
     runPolicy: Serial
     source:
       git:
-        ref: master
+        ref: security-fix
 # dtorresf: new git repository with templated angular2 application
         uri: 'https://github.com/gpe-mw-training/gpte-ng-dmf.git'
       type: Git
     strategy:
       sourceStrategy:
+        # dtorresf: use environment variables to obtain namespace and cluster name for kie-server endpoint configuration
+        # replaces the old ng-environment configmap
+        env:
+          - name: OCP_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: REST_API_URL
+            value: 'http://${APPLICATION_NAME}-kieserver-$(OCP_NAMESPACE).${CLUSTER}/'
+          - name: REST_API_USER
+            value: '${KIE_ADMIN_USER}'
+          - name: REST_API_PWD
+            value: '${KIE_ADMIN_PWD}'
         from:
 # dtorresf: Using the available ImageStreamTag from the openshift registry
           kind: ImageStreamTag
@@ -620,7 +615,6 @@ objects:
       type: Source
     triggers:
       - type: ImageChange
-
 - apiVersion: v1
   kind: ImageStream
   metadata:
@@ -682,18 +676,7 @@ objects:
             requests:
               cpu: "1"
               memory: 256Mi
-# dtorresf: mapping the configmap into the /data volume mount enables the
-# environment configuration for the angular2 nodejs application
-# note the coincidence with:
-# https://github.com/gpe-mw-training/gpte-ng-dmf/blob/master/.angular-cli.json#L50
-          volumeMounts:
-          - mountPath: /data
-            name: environment-volume
-            readOnly: true
-        volumes:
-        - configMap:
-            name: ng-environment
-          name: environment-volume
+# dtorresf: ng-environment configMap replaced by environment variables at BuildConfig
     triggers:
     - imageChangeParams:
         automatic: true
@@ -866,11 +849,12 @@ parameters:
   name: DECISION_CENTRAL_VOLUME_CAPACITY
   value: 512Mi
   required: true
+# dtorresf: PROJECT name parameter replace by metadata namespace.
 # dtorresf: These parameters enable the setup of project and cluster properties for the angular2
 - displayName: Project name
   name: PROJECT
-  required: true
-  value: dm-dtf
+  required: false
+  value: ''
 - displayName: Cluster name
   name: CLUSTER
   value: apps.dev37.openshift.opentlc.com

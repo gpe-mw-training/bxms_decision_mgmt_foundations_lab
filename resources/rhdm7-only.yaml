@@ -232,6 +232,9 @@ objects:
             value: probe.eap.jolokia.EapProbe
           - name: PROBE_DISABLE_BOOT_ERRORS_CHECK
             value: 'true'
+          # dtorresf: Enable ssh access through external tools like JBDS
+          - name: JAVA_OPTS_APPEND
+            value: '-Dorg.uberfire.nio.git.ssh.algorithm=RSA -Dorg.uberfire.nio.git.ssh.host=0.0.0.0'
           image: rhdm70-decisioncentral-openshift:1.0
           imagePullPolicy: Always
           livenessProbe:

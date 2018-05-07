@@ -214,8 +214,10 @@ objects:
     selector:
       deploymentConfig: ${APPLICATION_NAME}-rhdmcentr
     strategy:
-      # https://github.com/redhat-gpe/bxms_decision_mgmt_foundations/issues/39
-      type: Rolling
+
+      # When redeploying, a new decision central deployment will fail if set to rolling because the Lucene indexer cannot obtain a lock on a file, as the lock is held by the current deployment
+      type: Recreate
+
     template:
       metadata:
         labels:

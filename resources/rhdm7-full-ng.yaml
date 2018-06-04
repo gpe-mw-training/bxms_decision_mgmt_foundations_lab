@@ -244,6 +244,16 @@ objects:
             value: "${KIE_SERVER_CONTROLLER_PWD}"
           - name: KIE_SERVER_CONTROLLER_USER
             value: "${KIE_SERVER_CONTROLLER_USER}"
+
+
+          # Default is http: 
+          #    When KIE server is bounced, idled or rescheduled, the new instance will register with Decision Central, but the old, no longer existing instance is not removed from the server list by Decision Central. 
+          #    As a result, Decision Central has stale entries.
+          #    When sing WebSockets as protocol, when a KIE server disappears, this is detected by Decision Central, and the server is removed from the server list.
+          - name: KIE_SERVER_CONTROLLER_PROTOCOL
+            value: ws
+
+
           - name: KIE_SERVER_PWD
             value: "${KIE_SERVER_PWD}"
           - name: KIE_SERVER_USER
@@ -467,6 +477,15 @@ objects:
             value: "${APPLICATION_NAME}-rhdmcentr"
           - name: KIE_SERVER_CONTROLLER_USER
             value: "${KIE_SERVER_CONTROLLER_USER}"
+
+
+          # Default is http: 
+          #    When KIE server is bounced, idled or rescheduled, the new instance will register with Decision Central, but the old, no longer existing instance is not removed from the server list by Decision Central. 
+          #    As a result, Decision Central has stale entries.
+          #    When sing WebSockets as protocol, when a KIE server disappears, this is detected by Decision Central, and the server is removed from the server list.
+          - name: KIE_SERVER_CONTROLLER_PROTOCOL
+            value: ws
+
           - name: KIE_SERVER_HOST
             valueFrom:
               fieldRef:

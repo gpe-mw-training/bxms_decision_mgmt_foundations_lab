@@ -279,7 +279,7 @@ objects:
           # dtorresf: Enable ssh access through external tools like JBDS
           - name: JAVA_OPTS_APPEND
             value: '-Dorg.uberfire.nio.git.ssh.algorithm=RSA -Dorg.uberfire.nio.git.ssh.host=0.0.0.0'
-          image: rhdm70-decisioncentral-openshift:1.0
+          image: rhdm70-decisioncentral-openshift:1.1
           imagePullPolicy: Always
           livenessProbe:
             exec:
@@ -337,7 +337,7 @@ objects:
         - ${APPLICATION_NAME}-rhdmcentr
         from:
           kind: ImageStreamTag
-          name: rhdm70-decisioncentral-openshift:1.0
+          name: rhdm70-decisioncentral-openshift:1.1
           namespace: ${RHT_IMAGE_STREAM_NAMESPACE}
       type: ImageChange
     - type: ConfigChange
@@ -378,7 +378,7 @@ objects:
       sourceStrategy:
         from:
           kind: ImageStreamTag
-          name: rhdm70-kieserver-openshift:1.0
+          name: rhdm70-kieserver-openshift:1.1
           namespace: ${RHT_IMAGE_STREAM_NAMESPACE}
         type: Source
     triggers:

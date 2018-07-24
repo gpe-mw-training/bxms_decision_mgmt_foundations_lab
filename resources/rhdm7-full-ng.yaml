@@ -139,6 +139,7 @@ objects:
       application: "${APPLICATION_NAME}"
     annotations:
       description: Route for Decision Central's http service.
+      haproxy.router.openshift.io/timeout: 60s
   spec:
     host: "${DECISION_CENTRAL_HOSTNAME_HTTP}"
     to:
@@ -152,6 +153,7 @@ objects:
       application: "${APPLICATION_NAME}"
     annotations:
       description: Route for Decision Central's https service.
+      haproxy.router.openshift.io/timeout: 60s
   spec:
     host: "${DECISION_CENTRAL_HOSTNAME_HTTPS}"
     to:
@@ -246,8 +248,8 @@ objects:
             value: "${KIE_SERVER_CONTROLLER_USER}"
 
 
-          # Default is http: 
-          #    When KIE server is bounced, idled or rescheduled, the new instance will register with Decision Central, but the old, no longer existing instance is not removed from the server list by Decision Central. 
+          # Default is http:
+          #    When KIE server is bounced, idled or rescheduled, the new instance will register with Decision Central, but the old, no longer existing instance is not removed from the server list by Decision Central.
           #    As a result, Decision Central has stale entries.
           #    When sing WebSockets as protocol, when a KIE server disappears, this is detected by Decision Central, and the server is removed from the server list.
           - name: KIE_SERVER_CONTROLLER_PROTOCOL
@@ -479,8 +481,8 @@ objects:
             value: "${KIE_SERVER_CONTROLLER_USER}"
 
 
-          # Default is http: 
-          #    When KIE server is bounced, idled or rescheduled, the new instance will register with Decision Central, but the old, no longer existing instance is not removed from the server list by Decision Central. 
+          # Default is http:
+          #    When KIE server is bounced, idled or rescheduled, the new instance will register with Decision Central, but the old, no longer existing instance is not removed from the server list by Decision Central.
           #    As a result, Decision Central has stale entries.
           #    When sing WebSockets as protocol, when a KIE server disappears, this is detected by Decision Central, and the server is removed from the server list.
           - name: KIE_SERVER_CONTROLLER_PROTOCOL

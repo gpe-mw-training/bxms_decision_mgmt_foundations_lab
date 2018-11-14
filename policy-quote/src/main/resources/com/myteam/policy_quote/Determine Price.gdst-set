@@ -1,0 +1,89 @@
+<graph>
+  <entries>
+    <entry>
+      <pathHead class="org.uberfire.backend.vfs.impl.ObservablePathImpl">
+        <path class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+          <uri>default://master@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Determine%20Accident%20Surcharge.gdst</uri>
+          <fileName>Determine Accident Surcharge.gdst</fileName>
+          <attributes/>
+          <hasVersionSupport>true</hasVersionSupport>
+        </path>
+      </pathHead>
+      <pathVersion class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+        <uri>default://59569995513fb2f4b45b587c36118a6b4cc3046e@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Determine%20Accident%20Surcharge.gdst</uri>
+        <fileName>Determine Accident Surcharge.gdst</fileName>
+        <hasVersionSupport>false</hasVersionSupport>
+      </pathVersion>
+      <x>-351.5</x>
+      <y>-373.0</y>
+    </entry>
+    <entry>
+      <pathHead class="org.uberfire.backend.vfs.impl.ObservablePathImpl">
+        <path class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+          <uri>default://master@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Determine%20Newer%20Vehicle%20Surcharge.gdst</uri>
+          <fileName>Determine Newer Vehicle Surcharge.gdst</fileName>
+          <attributes/>
+          <hasVersionSupport>true</hasVersionSupport>
+        </path>
+      </pathHead>
+      <pathVersion class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+        <uri>default://8fa540bc1d07a8de4b440bf3b2ba13ce921b1795@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Determine%20Newer%20Vehicle%20Surcharge.gdst</uri>
+        <fileName>Determine Newer Vehicle Surcharge.gdst</fileName>
+        <hasVersionSupport>false</hasVersionSupport>
+      </pathVersion>
+      <x>552.0</x>
+      <y>-393.0</y>
+    </entry>
+    <entry>
+      <pathHead class="org.uberfire.backend.vfs.impl.ObservablePathImpl">
+        <path class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+          <uri>default://master@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Determine%20Base%20Price.gdst</uri>
+          <fileName>Determine Base Price.gdst</fileName>
+          <attributes/>
+          <hasVersionSupport>true</hasVersionSupport>
+        </path>
+      </pathHead>
+      <pathVersion class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+        <uri>default://af007ee89f6e058567e56a7f05ffb2db06a98401@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Determine%20Base%20Price.gdst</uri>
+        <fileName>Determine Base Price.gdst</fileName>
+        <hasVersionSupport>false</hasVersionSupport>
+      </pathVersion>
+      <x>-619.0</x>
+      <y>-690.0</y>
+    </entry>
+    <entry>
+      <pathHead class="org.uberfire.backend.vfs.impl.ObservablePathImpl">
+        <path class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+          <uri>default://master@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Determine%20State%20Surcharge.gdst</uri>
+          <fileName>Determine State Surcharge.gdst</fileName>
+          <attributes/>
+          <hasVersionSupport>true</hasVersionSupport>
+        </path>
+      </pathHead>
+      <pathVersion class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+        <uri>default://e7205f6105ff4c10254ab51f65e76ab4baf0e7c5@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Determine%20State%20Surcharge.gdst</uri>
+        <fileName>Determine State Surcharge.gdst</fileName>
+        <hasVersionSupport>false</hasVersionSupport>
+      </pathVersion>
+      <x>230.0</x>
+      <y>-636.0</y>
+    </entry>
+    <entry>
+      <pathHead class="org.uberfire.backend.vfs.impl.ObservablePathImpl">
+        <path class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+          <uri>default://master@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Apply%20Price%20Modifiers.gdst</uri>
+          <fileName>Apply Price Modifiers.gdst</fileName>
+          <attributes/>
+          <hasVersionSupport>true</hasVersionSupport>
+        </path>
+      </pathHead>
+      <pathVersion class="org.uberfire.backend.vfs.PathFactory$PathImpl">
+        <uri>default://af007ee89f6e058567e56a7f05ffb2db06a98401@myrepo/policy-quote/src/main/resources/com/myteam/policy_quote/Apply%20Price%20Modifiers.gdst</uri>
+        <fileName>Apply Price Modifiers.gdst</fileName>
+        <hasVersionSupport>false</hasVersionSupport>
+      </pathVersion>
+      <x>77.0</x>
+      <y>-847.0</y>
+    </entry>
+  </entries>
+</graph>

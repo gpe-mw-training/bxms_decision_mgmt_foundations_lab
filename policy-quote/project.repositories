@@ -1,0 +1,28 @@
+<project-repositories>
+  <repositories>
+    <repository>
+      <include>true</include>
+      <metadata>
+        <id>guvnor-m2-repo</id>
+        <url>http://gpte-buscentr-dtf-bpms.apps.dev37.openshift.opentlc.com/maven2/</url>
+        <source>PROJECT</source>
+      </metadata>
+    </repository>
+    <repository>
+      <include>true</include>
+      <metadata>
+        <id>local</id>
+        <url>/home/jboss/.m2/repository</url>
+        <source>LOCAL</source>
+      </metadata>
+    </repository>
+    <repository>
+      <include>true</include>
+      <metadata>
+        <id>central</id>
+        <url>https://repo1.maven.org/maven2</url>
+        <source>SETTINGS</source>
+      </metadata>
+    </repository>
+  </repositories>
+</project-repositories>

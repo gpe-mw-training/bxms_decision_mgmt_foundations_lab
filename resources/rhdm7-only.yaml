@@ -13,9 +13,9 @@ metadata:
     template.openshift.io/documentation-url: https://access.redhat.com/documentation/en-us/red_hat_decision_manager/7.1/html/deploying_a_red_hat_decision_manager_7.1_authoring_environment_on_red_hat_openshift_container_platform/
     template.openshift.io/support-url: https://access.redhat.com
     template.openshift.io/bindable: "false"
-  name: rhdm7-full-ng
+  name: rhdm7-only
 labels:
-  template: rhdm7-full-ng
+  template: rhdm7-only
   rhdm: "1.1"
 message: |-
           A new persistent Decision Manager application have been created in your project.

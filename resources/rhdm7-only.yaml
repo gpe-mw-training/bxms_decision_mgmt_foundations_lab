@@ -561,9 +561,14 @@ objects:
         - name: "${APPLICATION_NAME}-rhdmcentr"
           image: "rhdm71-decisioncentral-openshift:${IMAGE_STREAM_TAG}"
           imagePullPolicy: Always
+          # dtorresf: bumping up resources for decision central
           resources:
             limits:
+              cpu: "2"
               memory: "${DECISION_CENTRAL_MEMORY_LIMIT}"
+            requests:
+              cpu: "1"
+              memory: 0.5Gi
           volumeMounts:
           - name: decisioncentral-keystore-volume
             mountPath: "/etc/decisioncentral-secret-volume"

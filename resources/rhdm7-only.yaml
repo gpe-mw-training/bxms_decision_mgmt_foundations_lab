@@ -169,12 +169,12 @@ parameters:
 - displayName: KIE Server ImageStream Name
   description: The name of the image stream to use for KIE server. Default is "rhdm71-kieserver-openshift".
   name: KIE_SERVER_IMAGE_STREAM_NAME
-  value: "rhdm71-kieserver-openshift"
+  value: "rhdm-kieserver-rhel8"
   required: true
 - displayName: ImageStream Tag
   description: A named pointer to an image in an image stream. Default is "1.1".
   name: IMAGE_STREAM_TAG
-  value: "1.1"
+  value: "7.5.1"
   required: true
 - displayName: Maven repository ID
   description: The id to use for the maven repository, if set. Default is generated randomly.
@@ -542,7 +542,7 @@ objects:
         from:
           kind: ImageStreamTag
           namespace: "${RHT_IMAGE_STREAM_NAMESPACE}"
-          name: "rhdm71-decisioncentral-openshift:${IMAGE_STREAM_TAG}"
+          name: "rhdm-decisioncentral-rhel8:${IMAGE_STREAM_TAG}"
     - type: ConfigChange
     replicas: 1
     selector:
@@ -559,7 +559,7 @@ objects:
         terminationGracePeriodSeconds: 60
         containers:
         - name: "${APPLICATION_NAME}-rhdmcentr"
-          image: "rhdm71-decisioncentral-openshift:${IMAGE_STREAM_TAG}"
+          image: "rhdm-decisioncentral-rhel8:${IMAGE_STREAM_TAG}"
           imagePullPolicy: Always
           # dtorresf: bumping up resources for decision central
           resources:
